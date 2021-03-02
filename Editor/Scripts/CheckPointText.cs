@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CheckPoint : MonoBehaviour
+public class CheckPointText : CheckPoint
 {
-    public int frameNum;//変化が起こるフレームの位置番号
+    public Text text;
+    public RectTransform rectTransform;
 
     // Start is called before the first frame update
     void Start()
@@ -19,12 +20,7 @@ public class CheckPoint : MonoBehaviour
         
     }
 
-    public virtual void SetCheckPoint(GameObject targetObject, int frame)
-    {
- 
-    }
-
-    public void LoadCheckPoint()
+    public override void SetCheckPoint(GameObject targetObject, int frame)
     {
 
     }
