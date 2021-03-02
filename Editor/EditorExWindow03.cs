@@ -4,6 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
+public struct GameObjectBox//構造体は初期化されるらしい？
+{
+	GameObject gameObject;
+	bool inspectorTitlebars;
+	List<CheckPointText> checkPointTextList;
+}
+
 public class EditorExWindow03 : EditorWindow
 {
 	int timeSlider = 0;
@@ -16,18 +23,16 @@ public class EditorExWindow03 : EditorWindow
 
 	//Other OBJ
 	const int maxObjectNum = 10;
-	GameObject[] gameObjects = new GameObject[maxObjectNum];
-	bool[] inspectorTitlebars = new bool[maxObjectNum];
-	int[] selectionGrids = new int[maxObjectNum];
 
-	//Text Object
-	//string textField[] = new string[maxObjectNum];
-	//string textField = "";
+	List<GameObjectBox> gameObjectBoxList = new List<GameObjectBox>();
+
+    GameObject[] gameObjects = new GameObject[maxObjectNum];
+	bool[] inspectorTitlebars = new bool[maxObjectNum];
 
 	//Scroll
 	Vector2 objectsScrollPos = Vector2.zero;
 
-	//CheckPointこれ持ってるやつを他に作るべきでは。checkpointmanager的な。
+	//CheckPoint
 	List<CheckPointText> checkPointTextList = new List<CheckPointText>();//これをオブジェクトごとに分けるかどうかという話。
 
 	[MenuItem("Window/RABUKA EDITOR")]//よく考えたらなんだこれ
@@ -115,7 +120,7 @@ public class EditorExWindow03 : EditorWindow
 								//じゃあとりあえず、自動でオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
 								if (gameObjects[i].GetComponent<Text>())
 								{
-									TextObjectDisplay(i);
+									TextObjectButton(i);
 								}
 								else
 								{
@@ -126,26 +131,35 @@ public class EditorExWindow03 : EditorWindow
 						EditorGUILayout.EndVertical();
 					}
 				}
-            }
+			}
 			EditorGUILayout.EndScrollView();
 		}
 		EditorGUILayout.EndVertical();
 	}
 
-	void TextObjectDisplay(int i)//Textオブジェクトだった場合の表示
+	void TextObjectButton(int i)//Textオブジェクトだった場合の表示
     {
 		EditorGUILayout.LabelField("Object Type is TEXT.");
 		EditorGUILayout.BeginHorizontal(GUI.skin.box);
 		{
-			//selectionGrids[i] = GUILayout.SelectionGrid(selectionGrids[i], new string[] { "Text", "Color", "Position", "Size" }, 1);
 			if (GUILayout.Button("ポイント追加", GUILayout.Width(100), GUILayout.Height(20)))
 			{
-                checkPointTextList.Add(new CheckPointText(gameObjects[i], timeSlider));
+                checkPointTextList.Add(new CheckPointText(gameObjects[i], timeSlider));//よくわからないけど動的ダメっぽい。
 			}
-			//EditorGUILayout.LabelField(selectionGrids[i].ToString());
+			EditorGUILayout.BeginVertical(GUI.skin.box);
+            {
+				foreach (CheckPointText c in checkPointTextList)
+                {
+					EditorGUILayout.BeginHorizontal(GUI.skin.box);
+                    {
+						EditorGUILayout.LabelField(c.text.text);
+					}
+					EditorGUILayout.EndHorizontal();
+				}
+            }
+			EditorGUILayout.EndVertical();
 		}
 		EditorGUILayout.EndHorizontal();
 	}
-
 
 }
