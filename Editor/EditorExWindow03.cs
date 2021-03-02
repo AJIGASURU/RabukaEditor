@@ -171,6 +171,7 @@ public class EditorExWindow03 : EditorWindow
 					if (GUILayout.Button("追加", GUILayout.Width(80), GUILayout.Height(20)))
 					{
 						checkPointTexts[i,j] = new CheckPointText(gameObjects[i], timeSlider);
+						//次->チェックポイントをオブジェクト型にして、オブジェクトフィールド使おう。その前に整理
 					}
 					if (checkPointTexts[i,j] != null)
 					{
