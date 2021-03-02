@@ -12,6 +12,7 @@ public class CheckPointText : CheckPoint
     {
         this.text = targetObject.GetComponent<Text>();//これ参照しちゃうかな？
         this.rectTransform = targetObject.GetComponent<RectTransform>();
+        frameNum = frame;
     }
 
     public virtual void LoadCheckPoint(GameObject targetObject)//これポインタ的に使えるのか？

@@ -23,11 +23,13 @@ public class EditorExWindow03 : EditorWindow
 
 	//Other OBJ
 	const int maxObjectNum = 10;
+	const int maxCheckPointNum = 30;
 
-	List<GameObjectBox> gameObjectBoxList = new List<GameObjectBox>();
+	//List<GameObjectBox> gameObjectBoxList = new List<GameObjectBox>();
 
     GameObject[] gameObjects = new GameObject[maxObjectNum];
 	bool[] inspectorTitlebars = new bool[maxObjectNum];
+	CheckPointText[,] checkPointTexts = new CheckPointText[maxObjectNum,maxCheckPointNum];
 
 	//Scroll
 	Vector2 objectsScrollPos = Vector2.zero;
@@ -142,13 +144,15 @@ public class EditorExWindow03 : EditorWindow
 		EditorGUILayout.LabelField("Object Type is TEXT.");
 		EditorGUILayout.BeginHorizontal(GUI.skin.box);
 		{
+			/*
 			if (GUILayout.Button("ポイント追加", GUILayout.Width(100), GUILayout.Height(20)))
 			{
-                checkPointTextList.Add(new CheckPointText(gameObjects[i], timeSlider));//よくわからないけど動的ダメっぽい。
+                //checkPointTextList.Add(new CheckPointText(gameObjects[i], timeSlider));//よくわからないけど動的ダメっぽい。
+
 			}
 			EditorGUILayout.BeginVertical(GUI.skin.box);
             {
-				foreach (CheckPointText c in checkPointTextList)
+				foreach (CheckPointText c in checkPointTexts)
                 {
 					EditorGUILayout.BeginHorizontal(GUI.skin.box);
                     {
@@ -158,6 +162,24 @@ public class EditorExWindow03 : EditorWindow
 				}
             }
 			EditorGUILayout.EndVertical();
+			*/
+
+			for (int j = 0; j < maxCheckPointNum; j++)
+			{
+				EditorGUILayout.BeginVertical(GUI.skin.box);
+				{
+					if (GUILayout.Button("追加", GUILayout.Width(80), GUILayout.Height(20)))
+					{
+						checkPointTexts[i,j] = new CheckPointText(gameObjects[i], timeSlider);
+					}
+					if (checkPointTexts[i,j] != null)
+					{
+						EditorGUILayout.LabelField("Text:" + checkPointTexts[i, j].text.text);
+						EditorGUILayout.LabelField("Frame:" + checkPointTexts[i, j].frameNum.ToString());
+					}
+				}
+				EditorGUILayout.EndVertical();
+			}
 		}
 		EditorGUILayout.EndHorizontal();
 	}
