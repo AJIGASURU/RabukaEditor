@@ -8,20 +8,14 @@ public class CheckPointText : CheckPoint
     public Text text;
     public RectTransform rectTransform;
 
-    // Start is called before the first frame update
-    void Start()
+    public CheckPointText(GameObject targetObject, int frame)//コンストラクタ
     {
-        
+        this.text = targetObject.GetComponent<Text>();//これ参照しちゃうかな？
+        this.rectTransform = targetObject.GetComponent<RectTransform>();
     }
 
-    // Update is called once per frame
-    void Update()
+    public virtual void LoadCheckPoint(GameObject targetObject)//これポインタ的に使えるのか？
     {
-        
-    }
-
-    public override void SetCheckPoint(GameObject targetObject, int frame)
-    {
-
+        targetObject.GetComponent<Text>().text = this.text.text;
     }
 }

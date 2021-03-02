@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class EditorExWindow03 : EditorWindow
@@ -20,10 +21,14 @@ public class EditorExWindow03 : EditorWindow
 	int[] selectionGrids = new int[maxObjectNum];
 
 	//Text Object
-
+	//string textField[] = new string[maxObjectNum];
+	//string textField = "";
 
 	//Scroll
 	Vector2 objectsScrollPos = Vector2.zero;
+
+	//CheckPointこれ持ってるやつを他に作るべきでは。checkpointmanager的な。
+	List<CheckPointText> checkPointTextList = new List<CheckPointText>();//これをオブジェクトごとに分けるかどうかという話。
 
 	[MenuItem("Window/RABUKA EDITOR")]//よく考えたらなんだこれ
 
@@ -132,14 +137,12 @@ public class EditorExWindow03 : EditorWindow
 		EditorGUILayout.LabelField("Object Type is TEXT.");
 		EditorGUILayout.BeginHorizontal(GUI.skin.box);
 		{
-			selectionGrids[i] = GUILayout.SelectionGrid(selectionGrids[i], new string[] { "Text", "Color", "Position", "Size" }, 1);
+			//selectionGrids[i] = GUILayout.SelectionGrid(selectionGrids[i], new string[] { "Text", "Color", "Position", "Size" }, 1);
 			if (GUILayout.Button("ポイント追加", GUILayout.Width(100), GUILayout.Height(20)))
 			{
-				//セレクショングリッドはスイッチかな。
+                checkPointTextList.Add(new CheckPointText(gameObjects[i], timeSlider));
 			}
-			EditorGUILayout.LabelField(selectionGrids[i].ToString());
-
-
+			//EditorGUILayout.LabelField(selectionGrids[i].ToString());
 		}
 		EditorGUILayout.EndHorizontal();
 	}
