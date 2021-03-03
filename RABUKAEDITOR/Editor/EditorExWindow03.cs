@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class EditorExWindow03 : EditorWindow
 {
-	int timeSlider = 0;
+	public int timeSlider = 0;
 	int maxFrame = 1000;
 
 	//SOUND OBJ
@@ -30,6 +30,10 @@ public class EditorExWindow03 : EditorWindow
 	GameObject[] checkPointObject = new GameObject[maxCheckPointNum];
 	GameObject checkPointParent;
 
+	//出現系オブジェクト
+	GameObject rabuka;//Parent
+	GameObject frameNumber;//フレーム
+
 	[MenuItem("Window/RABUKA EDITOR")]//よく考えたらなんだこれ
 
 	static void Open()
@@ -38,7 +42,17 @@ public class EditorExWindow03 : EditorWindow
 		EditorWindow.GetWindow<EditorExWindow03>("RABUKA EDITOR");
 	}
 
-	void Update()//このアップデートが他と同一かって話よな。一応。フレームレート指定しよう。
+    private void Awake()
+    {
+		Debug.Log("Awake!");
+		//初期化
+		if (!GameObject.Find("Rabuka"))
+		{
+			rabuka = new GameObject("Rabuka");//ラブかにフレームナンバープロパティ をもつスクリプトつけよう。Rabuka.cs
+		}
+	}
+
+    void Update()//このアップデートが他と同一かって話よな。一応。フレームレート指定しよう。
 	{
 		//EditorApplication.step();1フレームごと？
 		if (EditorApplication.isPlaying)//実行中UPDATE
@@ -63,7 +77,8 @@ public class EditorExWindow03 : EditorWindow
 				EditorApplication.ExecuteMenuItem("Edit/Play");//停止（再生）
 			}
 
-		}//実行中update
+		}
+		//実行外含有update
 	}
 
 	void OnGUI()
