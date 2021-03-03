@@ -20,7 +20,7 @@ public class EditorExWindow03 : EditorWindow
 
     GameObject[] gameObjects = new GameObject[maxObjectNum];
 	bool[] inspectorTitlebars = new bool[maxObjectNum];
-	CheckPointText[,] checkPointTexts = new CheckPointText[maxObjectNum,maxCheckPointNum];
+	//CheckPointText[,] checkPointTexts = new CheckPointText[maxObjectNum,maxCheckPointNum];
 
 	//Scroll
 	Vector2 objectsScrollPos = Vector2.zero;
@@ -28,11 +28,9 @@ public class EditorExWindow03 : EditorWindow
 	//CheckPoint
 	//List<CheckPointText> checkPointTextList = new List<CheckPointText>();//これをオブジェクトごとに分けるかどうかという話。
 	GameObject[] checkPointObject = new GameObject[maxCheckPointNum];
-	GameObject checkPointParent;
 
 	//出現系オブジェクト
 	GameObject rabuka;//Parent
-	GameObject frameNumber;//フレーム
 
 	[MenuItem("Window/RABUKA EDITOR")]//よく考えたらなんだこれ
 
@@ -49,6 +47,7 @@ public class EditorExWindow03 : EditorWindow
 		if (!GameObject.Find("Rabuka"))
 		{
 			rabuka = new GameObject("Rabuka");//ラブかにフレームナンバープロパティ をもつスクリプトつけよう。Rabuka.cs
+			rabuka.AddComponent<Rabuka>();
 		}
 	}
 
@@ -77,6 +76,8 @@ public class EditorExWindow03 : EditorWindow
 				EditorApplication.ExecuteMenuItem("Edit/Play");//停止（再生）
 			}
 
+			//フレーム番号代入
+			rabuka.GetComponent<Rabuka>().frame = timeSlider;
 		}
 		//実行外含有update
 	}
@@ -178,15 +179,16 @@ public class EditorExWindow03 : EditorWindow
 				{
 					if (GUILayout.Button("追加", GUILayout.Width(80), GUILayout.Height(20)))
 					{
-						//checkPointTexts[i,j] = new CheckPointText(gameObjects[i], timeSlider);
+						//ゲームオブジェクト自体に付けちゃうという横暴
 						//次->チェックポイントをオブジェクト型にして、オブジェクトフィールド使おう。その前に整理
-						checkPointObject[j] = new GameObject("CheckPoints/TextCheckPoint " + i.ToString() + " " + j.ToString());
+						checkPointObject[j] = new GameObject("TextCheckPoint " + i.ToString() + " " + j.ToString());
+						checkPointObject[j].transform.SetParent(gameObjects[i].transform);//親指定
 						checkPointObject[j].AddComponent<CheckPointText>();
 						checkPointObject[j].GetComponent<CheckPointText>().SetCheckPoint(gameObjects[i], timeSlider);
 					}
 					if (checkPointObject[j])//最初nullなのかな。削除時どうしよう・・・null代入とか？
 					{
-						EditorGUILayout.LabelField("Text:" + checkPointObject[j].GetComponent<CheckPointText>().text.text);
+						EditorGUILayout.LabelField("Text:" + checkPointObject[j].GetComponent<CheckPointText>().text);
 						EditorGUILayout.LabelField("Frame:" + checkPointObject[j].GetComponent<CheckPointText>().frameNum.ToString());
 					}
 				}
