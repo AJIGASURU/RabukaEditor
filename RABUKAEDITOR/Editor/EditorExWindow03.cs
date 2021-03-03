@@ -48,7 +48,11 @@ public class EditorExWindow03 : EditorWindow
 		{
 			rabuka = new GameObject("Rabuka");//ラブかにフレームナンバープロパティ をもつスクリプトつけよう。Rabuka.cs
 			rabuka.AddComponent<Rabuka>();
-		}
+        }
+        else
+        {
+			rabuka = GameObject.Find("Rabuka");
+        }
 	}
 
     void Update()//このアップデートが他と同一かって話よな。一応。フレームレート指定しよう。
@@ -102,11 +106,11 @@ public class EditorExWindow03 : EditorWindow
 				if (soundObject != null && soundObject.GetComponent<AudioSource>() != null)
 				{
 					audioSource = soundObject.GetComponent<AudioSource>();
+					maxFrame = (int)(audioSource.clip.length * 30.0f);
 					inspectorTitlebarForSound = EditorGUILayout.InspectorTitlebar(inspectorTitlebarForSound, soundObject);
 					if (inspectorTitlebarForSound)
 					{
 						EditorGUILayout.LabelField("オーディオクリップの長さは" + audioSource.clip.length.ToString() + "秒です。");
-						maxFrame = (int)(audioSource.clip.length * 30.0f);
 					}
 				}
 				else
@@ -177,12 +181,12 @@ public class EditorExWindow03 : EditorWindow
 			{
 				EditorGUILayout.BeginVertical(GUI.skin.box);
 				{
-					if (GUILayout.Button("追加", GUILayout.Width(80), GUILayout.Height(20)))
+					if (GUILayout.Button("変更", GUILayout.Width(80), GUILayout.Height(20)))
 					{
 						//ゲームオブジェクト自体に付けちゃうという横暴
 						//次->チェックポイントをオブジェクト型にして、オブジェクトフィールド使おう。その前に整理
 						checkPointObject[j] = new GameObject("TextCheckPoint " + i.ToString() + " " + j.ToString());
-						checkPointObject[j].transform.SetParent(gameObjects[i].transform);//親指定
+						checkPointObject[j].transform.SetParent(rabuka.transform);//ラブ下につけます。
 						checkPointObject[j].AddComponent<CheckPointText>();
 						checkPointObject[j].GetComponent<CheckPointText>().SetCheckPoint(gameObjects[i], timeSlider);
 					}

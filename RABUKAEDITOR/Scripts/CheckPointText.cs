@@ -11,18 +11,32 @@ public class CheckPointText : CheckPoint
     public char[] textChar;
     public string text;
 
+    void Start()
+    {
+        this.rabuka = GameObject.Find("Rabuka").GetComponent<Rabuka>();
+    }
+
+    void Update()
+    {
+        if(this.rabuka.frame == this.frameNum)
+        {
+            LoadCheckPoint();
+        }
+    }
+
     public void SetCheckPoint(GameObject targetObject, int frame)
     {
         //this.text = targetObject.GetComponent<Text>();//これ参照しちゃうかな？
         //this.rectTransform = targetObject.GetComponent<RectTransform>();
         //textChar = targetObject.GetComponent<Text>().text.ToCharArray();
-        text = targetObject.GetComponent<Text>().text;
+        this.targetObject = targetObject;
+        this.text = targetObject.GetComponent<Text>().text;
         Debug.Log(text);
-        frameNum = frame;
+        this.frameNum = frame;
     }
 
-    public virtual void LoadCheckPoint(GameObject targetObject)//これポインタ的に使えるのか？
+    public void LoadCheckPoint()//これポインタ的に使えるのか？
     {
-        targetObject.GetComponent<Text>().text = this.text;
+        this.targetObject.GetComponent<Text>().text = this.text;
     }
 }
