@@ -20,17 +20,18 @@ public class EditorExWindow03 : EditorWindow
 
     GameObject[] gameObjects = new GameObject[maxObjectNum];
 	bool[] inspectorTitlebars = new bool[maxObjectNum];
-	//CheckPointText[,] checkPointTexts = new CheckPointText[maxObjectNum,maxCheckPointNum];
 
 	//Scroll
 	Vector2 objectsScrollPos = Vector2.zero;
 
 	//CheckPoint
-	//List<CheckPointText> checkPointTextList = new List<CheckPointText>();//これをオブジェクトごとに分けるかどうかという話。
+	//配列バージョン
 	GameObject[] checkPointObject = new GameObject[maxCheckPointNum];
+	//2次元リストバージョン
+	List<List<GameObject>> checkPointList = new List<List<GameObject>>();
 
 	//出現系オブジェクト
-	GameObject rabuka;//Parent
+	GameObject rabuka;//Parent、情報はここに保存するか？
 
 	[MenuItem("Window/RABUKA EDITOR")]//よく考えたらなんだこれ
 
@@ -43,7 +44,7 @@ public class EditorExWindow03 : EditorWindow
     private void Awake()
     {
 		Debug.Log("Awake!");
-		//初期化
+		//初期化（ロード）
 		if (!GameObject.Find("Rabuka"))
 		{
 			rabuka = new GameObject("Rabuka");//ラブかにフレームナンバープロパティ をもつスクリプトつけよう。Rabuka.cs
@@ -119,7 +120,7 @@ public class EditorExWindow03 : EditorWindow
 				}
 			}EditorGUILayout.EndHorizontal();
 
-			//その他のオブジェクト？
+			//その他のオブジェクトのところ
 			objectsScrollPos = EditorGUILayout.BeginScrollView(objectsScrollPos, GUI.skin.box);
 			{
 				for(int i=0; i<maxObjectNum; i++)
