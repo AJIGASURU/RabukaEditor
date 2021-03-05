@@ -6,8 +6,6 @@ using System;
 
 public class CheckPointText : CheckPoint
 {
-    //public Text text;
-    //public RectTransform rectTransform;
     public char[] textChar;
     public string text;
 
@@ -26,9 +24,6 @@ public class CheckPointText : CheckPoint
 
     public void SetCheckPoint(GameObject targetObject, int frame)
     {
-        //this.text = targetObject.GetComponent<Text>();//これ参照しちゃうかな？
-        //this.rectTransform = targetObject.GetComponent<RectTransform>();
-        //textChar = targetObject.GetComponent<Text>().text.ToCharArray();
         this.targetObject = targetObject;
         this.text = targetObject.GetComponent<Text>().text;
         Debug.Log(text);

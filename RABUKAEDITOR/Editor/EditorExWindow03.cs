@@ -23,6 +23,7 @@ public class EditorExWindow03 : EditorWindow
 	*/
 
 	GameObject selectedGameObject;//洗濯中オブジェクト追加用
+	GameObject tmpObject;//一時的に使ってください!!!!!
 
 	//Scroll
 	Vector2 objectsScrollPos = Vector2.zero;
@@ -130,49 +131,30 @@ public class EditorExWindow03 : EditorWindow
 			//オブジェクト追加ボタン
 			if (GUILayout.Button("オブジェクト追加", GUILayout.Width(120), GUILayout.Height(20)))
             {
-                if (selectedGameObject)//塗るなら入らない。
+                if (selectedGameObject)//ぬるなら入らない。
 				{ 
-					rabuka.GetComponent<Rabuka>().objectList.Add(selectedGameObject);//構造体直接いじるんじゃなくて、ラブカにメソッド作って！！！！！
+					rabuka.GetComponent<Rabuka>().objectList.Add(selectedGameObject);
+					checkPointList.Add(new List<GameObject>());
+					tmpObject = new GameObject("TargetObject:" + (rabuka.GetComponent<Rabuka>().objectList.Count - 1).ToString());
+					tmpObject.transform.SetParent(rabuka.transform);//ラブ下につけます。
 				}
 			}
 
 			objectsScrollPos = EditorGUILayout.BeginScrollView(objectsScrollPos, GUI.skin.box);
 			{
-				/*
-				for (int i=0; i<rabuka.GetComponent<Rabuka>().objectList.Count; i++)//チェックポイントリスト1次元目のカウント=ゲームオブジェクトリストのカウントにするべき。
-                {
-					EditorGUILayout.BeginVertical(GUI.skin.box);//縦
-					{
-						//
-						//rabuka.GetComponent<Rabuka>().objectList.Insert(i, EditorGUILayout.ObjectField("GAME OBJECT " + i.ToString(), gameObjects[i], typeof(GameObject), true) as GameObject);
-						if (gameObjects[i] != null)
-						{
-							//じゃあとりあえず、自動でオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
-							if (gameObjects[i].GetComponent<Text>())
-							{
-								TextObjectButton(i);
-							}
-							else
-							{
-								EditorGUILayout.LabelField("The object type could not be recognized. It is classified into OTHER.");
-							}
-                            
-						}
-					}
-					EditorGUILayout.EndVertical();
-				}
-				*/
-				foreach(GameObject g in rabuka.GetComponent<Rabuka>().objectList)
+				int index = 0;
+				foreach(GameObject g in rabuka.GetComponent<Rabuka>().objectList)//インデックスつける？
                 {
 					EditorGUILayout.BeginVertical(GUI.skin.box);//縦
 					{
 						if (g != null)//多分必要ないがエラー対策
 						{
 							//じゃあとりあえず、自動でオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
-							if (g.GetComponent<Text>())
+							if (g.GetComponent<Text>())//テキストオブジェクトと判定。
 							{
-								//TextObjectButton(i);
+								EditorGUILayout.LabelField("Name: " + g.name);
 								EditorGUILayout.LabelField("TEXT OBJECT");
+								TextCheckPointDisplay(g, index);
 							}
 							else
 							{
@@ -182,6 +164,7 @@ public class EditorExWindow03 : EditorWindow
 						}
 					}
 					EditorGUILayout.EndVertical();
+					index++;
 				}
 			}
 			EditorGUILayout.EndScrollView();
@@ -189,64 +172,36 @@ public class EditorExWindow03 : EditorWindow
 		EditorGUILayout.EndVertical();
 	}
 
-	void TextObjectButton(int i)//Textオブジェクトだった場合の表示
+	void TextCheckPointDisplay(GameObject targetObject, int objectIndex)//Textオブジェクトだった場合の（そのターゲとオブジェクト固有の）表示
     {
-		EditorGUILayout.LabelField("Object Type is TEXT.");
+		//Debug.Log(objectIndex.ToString());
+		GameObject checkPointParent = rabuka.transform.Find("TargetObject:" + objectIndex.ToString()).gameObject;
+		if(checkPointParent == null)
+        {
+			Debug.Log("エラー:TextCheckPointDisplay()");
+        }
+		//チェックポイント追加
+		if (GUILayout.Button("今の条件でチェックポイントを追加", GUILayout.Width(300), GUILayout.Height(30)))
+		{
+			tmpObject = new GameObject("TextCheckPoint:" + checkPointList[objectIndex].Count.ToString());//これして親消えないかな・・・？わからん。
+			tmpObject.transform.SetParent(checkPointParent.transform);
+			tmpObject.AddComponent<CheckPointText>();
+			tmpObject.GetComponent<CheckPointText>().SetCheckPoint(targetObject, timeSlider);
+			checkPointList[objectIndex].Add(tmpObject);
+		}
+
 		EditorGUILayout.BeginHorizontal(GUI.skin.box);
 		{
-			/*
-			if (GUILayout.Button("ポイント追加", GUILayout.Width(100), GUILayout.Height(20)))
-			{
-                //checkPointTextList.Add(new CheckPointText(gameObjects[i], timeSlider));//よくわからないけど動的ダメっぽい。
-
-			}
-			EditorGUILayout.BeginVertical(GUI.skin.box);
-            {
-				foreach (CheckPointText c in checkPointTexts)
-                {
-					EditorGUILayout.BeginHorizontal(GUI.skin.box);
-                    {
-						EditorGUILayout.LabelField(c.text.text);
-					}
-					EditorGUILayout.EndHorizontal();
-				}
-            }
-			EditorGUILayout.EndVertical();
-			*/
-
-			for (int j = 0; j < maxCheckPointNum; j++)//これが参照の肝
+			foreach (GameObject checkPoint in checkPointList[objectIndex])//これが参照の肝
 			{
 				EditorGUILayout.BeginVertical(GUI.skin.box);
 				{
-					if (GUILayout.Button("変更", GUILayout.Width(80), GUILayout.Height(20)))
-					{
-						//ゲームオブジェクト自体に付けちゃうという横暴
-						//次->チェックポイントをオブジェクト型にして、オブジェクトフィールド使おう。その前に整理
-						checkPointObject[j] = new GameObject("TextCheckPoint " + i.ToString() + " " + j.ToString());
-						checkPointObject[j].transform.SetParent(rabuka.transform);//ラブ下につけます。
-						checkPointObject[j].AddComponent<CheckPointText>();
-						checkPointObject[j].GetComponent<CheckPointText>().SetCheckPoint(selectedGameObject, timeSlider);
-					}
-					if (checkPointObject[j])//最初nullなのかな。削除時どうしよう・・・null代入とか？
-					{
-						EditorGUILayout.LabelField("Text:" + checkPointObject[j].GetComponent<CheckPointText>().text);
-						EditorGUILayout.LabelField("Frame:" + checkPointObject[j].GetComponent<CheckPointText>().frameNum.ToString());
-					}
+					EditorGUILayout.LabelField("Text:" + checkPoint.GetComponent<CheckPointText>().text);
+					EditorGUILayout.LabelField("Frame:" + checkPoint.GetComponent<CheckPointText>().frameNum.ToString());
+					
 				}
 				EditorGUILayout.EndVertical();
 			}
-			//表示（テキストに限らないので、ここじゃなくていいかも）、Findするならチェックポイントオブジェクトの保持必要なくね？
-			/*
-			if (checkPointParent = GameObject.Find("CheckPoints"))
-			{
-				for(int k=0; k<checkPointParent.transform.childCount; k++)
-				{
-					ChildObject[i] = ParentObject.transform.GetChild(i).gameObject;
-				}
-				//EditorGUILayout.LabelField("Text:" + checkPointTexts[i, j].text.text);
-				//EditorGUILayout.LabelField("Frame:" + checkPointTexts[i, j].frameNum.ToString());
-			}
-			*/
 		}
 		EditorGUILayout.EndHorizontal();
 	}

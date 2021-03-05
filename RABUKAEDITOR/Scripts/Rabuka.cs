@@ -40,25 +40,7 @@ public class Rabuka : MonoBehaviour
 
     public void Init()
     {
-        //ロード
+        //ラブカのロードは基本必要ないはず
     }
-
-    //ターゲットオブジェクトリスト
-    /*
-    public void AddObjectElement()//リストを長くするだけ。
-    {
-        objectElementList.Add(new GameObjectElement(gameObject ,false));//gameObject->自分自身じゃなかったっけ。
-    }
-
-    public void SetObjectElement(GameObject gameObject, int i)
-    {
-        objectElementList.Insert(i, new GameObjectElement(gameObject, false));
-    }
-
-    public int ObjectElementCount()
-    {
-        return objectElementList.Count;
-    }
-    */
 
 }

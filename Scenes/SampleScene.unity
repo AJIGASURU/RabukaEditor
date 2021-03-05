@@ -277,8 +277,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   frame: 0
-  objectList:
-  - {fileID: 648762586}
+  objectList: []
 --- !u!4 &485624449
 Transform:
   m_ObjectHideFlags: 0
