@@ -15,19 +15,23 @@ public class EditorExWindow03 : EditorWindow
 	bool inspectorTitlebarForSound = false;
 
 	//Other OBJ
-	const int maxObjectNum = 10;
-	const int maxCheckPointNum = 30;
 
+	/*
+	const int maxObjectNum = 10;
     GameObject[] gameObjects = new GameObject[maxObjectNum];
 	bool[] inspectorTitlebars = new bool[maxObjectNum];
+	*/
+
+	GameObject selectedGameObject;//洗濯中オブジェクト追加用
 
 	//Scroll
 	Vector2 objectsScrollPos = Vector2.zero;
 
 	//CheckPoint
 	//配列バージョン
+	const int maxCheckPointNum = 30;
 	GameObject[] checkPointObject = new GameObject[maxCheckPointNum];
-	//2次元リストバージョン
+	//2次元リストバージョン（チェックポイントだけ持って、ターゲットオブジェクト自体は最悪持たない手もある。）
 	List<List<GameObject>> checkPointList = new List<List<GameObject>>();
 
 	//出現系オブジェクト
@@ -87,7 +91,7 @@ public class EditorExWindow03 : EditorWindow
 		//実行外含有update
 	}
 
-	void OnGUI()
+	void OnGUI()//不定期で通る
 	{
         EditorGUILayout.BeginVertical(GUI.skin.box);//縦
 		{
@@ -121,31 +125,63 @@ public class EditorExWindow03 : EditorWindow
 			}EditorGUILayout.EndHorizontal();
 
 			//その他のオブジェクトのところ
+			//選択中のオブジェクトをボタンで入れる
+			selectedGameObject = EditorGUILayout.ObjectField("SELECTED OBJECT ", selectedGameObject, typeof(GameObject), true) as GameObject;
+			//オブジェクト追加ボタン
+			if (GUILayout.Button("オブジェクト追加", GUILayout.Width(120), GUILayout.Height(20)))
+            {
+                if (selectedGameObject)//塗るなら入らない。
+				{ 
+					rabuka.GetComponent<Rabuka>().objectList.Add(selectedGameObject);//構造体直接いじるんじゃなくて、ラブカにメソッド作って！！！！！
+				}
+			}
+
 			objectsScrollPos = EditorGUILayout.BeginScrollView(objectsScrollPos, GUI.skin.box);
 			{
-				for(int i=0; i<maxObjectNum; i++)
+				/*
+				for (int i=0; i<rabuka.GetComponent<Rabuka>().objectList.Count; i++)//チェックポイントリスト1次元目のカウント=ゲームオブジェクトリストのカウントにするべき。
                 {
 					EditorGUILayout.BeginVertical(GUI.skin.box);//縦
 					{
-						gameObjects[i] = EditorGUILayout.ObjectField("GAME OBJECT " + i.ToString(), gameObjects[i], typeof(GameObject), true) as GameObject;
+						//
+						//rabuka.GetComponent<Rabuka>().objectList.Insert(i, EditorGUILayout.ObjectField("GAME OBJECT " + i.ToString(), gameObjects[i], typeof(GameObject), true) as GameObject);
 						if (gameObjects[i] != null)
 						{
-							inspectorTitlebars[i] = EditorGUILayout.InspectorTitlebar(inspectorTitlebars[i], gameObjects[i]);
-							if (inspectorTitlebars[i])
+							//じゃあとりあえず、自動でオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
+							if (gameObjects[i].GetComponent<Text>())
 							{
-								//じゃあとりあえず、自動でオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
-								if (gameObjects[i].GetComponent<Text>())
-								{
-									TextObjectButton(i);
-								}
-								else
-								{
-									EditorGUILayout.LabelField("The object type could not be recognized. It is classified into OTHER.");
-								}
-                            }
+								TextObjectButton(i);
+							}
+							else
+							{
+								EditorGUILayout.LabelField("The object type could not be recognized. It is classified into OTHER.");
+							}
+                            
 						}
-						EditorGUILayout.EndVertical();
 					}
+					EditorGUILayout.EndVertical();
+				}
+				*/
+				foreach(GameObject g in rabuka.GetComponent<Rabuka>().objectList)
+                {
+					EditorGUILayout.BeginVertical(GUI.skin.box);//縦
+					{
+						if (g != null)//多分必要ないがエラー対策
+						{
+							//じゃあとりあえず、自動でオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
+							if (g.GetComponent<Text>())
+							{
+								//TextObjectButton(i);
+								EditorGUILayout.LabelField("TEXT OBJECT");
+							}
+							else
+							{
+								EditorGUILayout.LabelField("The object type could not be recognized. It is classified into OTHER.");
+							}
+
+						}
+					}
+					EditorGUILayout.EndVertical();
 				}
 			}
 			EditorGUILayout.EndScrollView();
@@ -189,7 +225,7 @@ public class EditorExWindow03 : EditorWindow
 						checkPointObject[j] = new GameObject("TextCheckPoint " + i.ToString() + " " + j.ToString());
 						checkPointObject[j].transform.SetParent(rabuka.transform);//ラブ下につけます。
 						checkPointObject[j].AddComponent<CheckPointText>();
-						checkPointObject[j].GetComponent<CheckPointText>().SetCheckPoint(gameObjects[i], timeSlider);
+						checkPointObject[j].GetComponent<CheckPointText>().SetCheckPoint(selectedGameObject, timeSlider);
 					}
 					if (checkPointObject[j])//最初nullなのかな。削除時どうしよう・・・null代入とか？
 					{
