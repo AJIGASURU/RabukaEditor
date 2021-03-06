@@ -15,12 +15,11 @@ public class EditorExWindow03 : EditorWindow
 	bool inspectorTitlebarForSound = false;
 
 	//Other OBJ
-
 	GameObject selectedGameObject;//洗濯中オブジェクト追加用
 	GameObject tmpObject;//必ず一時的に使ってください!!!!!
 
 	//Scroll
-	Vector2 objectsScrollPos = Vector2.zero;
+	Vector2 objectsScrollPos = Vector2.zero;//これも増やすのいややんなあ。
 
 	//CheckPoint
 	//2次元リストバージョン（チェックポイントだけ持って、ターゲットオブジェクト自体は最悪持たない手もある。）
@@ -131,7 +130,7 @@ public class EditorExWindow03 : EditorWindow
 			//選択中のオブジェクトをボタンで入れる
 			selectedGameObject = EditorGUILayout.ObjectField("SELECTED OBJECT ", selectedGameObject, typeof(GameObject), true) as GameObject;
 			//オブジェクト追加ボタン
-			if (GUILayout.Button("選択中のオブジェクトを追加", GUILayout.Width(150), GUILayout.Height(30)))
+			if (GUILayout.Button("選択中のオブジェクトを追加", GUILayout.Width(200), GUILayout.Height(30)))
             {
                 if (selectedGameObject)//ぬるなら入らない。
 				{ 
@@ -183,8 +182,8 @@ public class EditorExWindow03 : EditorWindow
         {
 			Debug.Log("エラー:TextCheckPointDisplay()");
         }
-		//チェックポイント追加
-		if (GUILayout.Button("今の条件でチェックポイントを追加", GUILayout.Width(300), GUILayout.Height(30)))
+		//チェックポイント追加（関数にするべきだけど優先的ではない）
+		if (GUILayout.Button("今の条件でチェックポイントを追加", GUILayout.Width(400), GUILayout.Height(30)))
 		{
 			tmpObject = new GameObject("TextCheckPoint:" + checkPointList[objectIndex].Count.ToString());//これして親消えないかな・・・？わからん。
 			tmpObject.transform.SetParent(checkPointParent.transform);
@@ -193,14 +192,21 @@ public class EditorExWindow03 : EditorWindow
 			checkPointList[objectIndex].Add(tmpObject);
 		}
 
-		EditorGUILayout.BeginHorizontal(GUI.skin.box);
+		EditorGUILayout.BeginHorizontal(GUI.skin.box, GUILayout.Width(200));
 		{
-			foreach (GameObject checkPoint in checkPointList[objectIndex])//これが参照の肝
+			for (i = 0; i < checkPointList[objectIndex].Count; i++)//チェックポイントごと
 			{
 				EditorGUILayout.BeginVertical(GUI.skin.box);
 				{
-					EditorGUILayout.LabelField("Text:" + checkPoint.GetComponent<CheckPointText>().text);
-					EditorGUILayout.LabelField("Frame:" + checkPoint.GetComponent<CheckPointText>().frameNum.ToString());
+					EditorGUILayout.LabelField("Text:" + checkPointList[objectIndex][i].GetComponent<CheckPointText>().text);
+					EditorGUILayout.LabelField("Frame:" + checkPointList[objectIndex][i].GetComponent<CheckPointText>().frameNum.ToString());
+
+					//どのチェックポイントにも共通する処理は関数にでもするか。
+					if (GUILayout.Button("削除", GUILayout.Width(100), GUILayout.Height(30)))
+					{
+						GameObject.DestroyImmediate(checkPointList[objectIndex][i]);
+						checkPointList[objectIndex].Remove(checkPointList[objectIndex][i]);
+					}
 				}
 				EditorGUILayout.EndVertical();
 			}
