@@ -8,4 +8,9 @@ public class CheckPoint : MonoBehaviour
     public int frameNum;//変化が起こるフレームの位置番号
     public GameObject targetObject;
     public Rabuka rabuka;
+
+    void Start()
+    {
+        this.rabuka = GameObject.Find("Rabuka").GetComponent<Rabuka>();
+    }
 }

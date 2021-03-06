@@ -16,27 +16,21 @@ public class EditorExWindow03 : EditorWindow
 
 	//Other OBJ
 
-	/*
-	const int maxObjectNum = 10;
-    GameObject[] gameObjects = new GameObject[maxObjectNum];
-	bool[] inspectorTitlebars = new bool[maxObjectNum];
-	*/
-
 	GameObject selectedGameObject;//洗濯中オブジェクト追加用
-	GameObject tmpObject;//一時的に使ってください!!!!!
+	GameObject tmpObject;//必ず一時的に使ってください!!!!!
 
 	//Scroll
 	Vector2 objectsScrollPos = Vector2.zero;
 
 	//CheckPoint
-	//配列バージョン
-	const int maxCheckPointNum = 30;
-	GameObject[] checkPointObject = new GameObject[maxCheckPointNum];
 	//2次元リストバージョン（チェックポイントだけ持って、ターゲットオブジェクト自体は最悪持たない手もある。）
 	List<List<GameObject>> checkPointList = new List<List<GameObject>>();
 
 	//出現系オブジェクト
-	GameObject rabuka;//Parent、情報はここに保存するか？
+	GameObject rabuka;//司令塔、情報はここに保存するか？
+
+    //for用
+    int i = 0, j = 0, k = 0;
 
 	[MenuItem("Window/RABUKA EDITOR")]//よく考えたらなんだこれ
 
@@ -50,6 +44,7 @@ public class EditorExWindow03 : EditorWindow
     {
 		Debug.Log("Awake!");
 		//初期化（ロード）
+		//ラブカ
 		if (!GameObject.Find("Rabuka"))
 		{
 			rabuka = new GameObject("Rabuka");//ラブかにフレームナンバープロパティ をもつスクリプトつけよう。Rabuka.cs
@@ -58,7 +53,13 @@ public class EditorExWindow03 : EditorWindow
         else
         {
 			rabuka = GameObject.Find("Rabuka");
+            if (rabuka.GetComponent<Rabuka>().soundObject != null)
+            {
+				soundObject = rabuka.GetComponent<Rabuka>().soundObject;
+			}
         }
+		//チェックポイントのロード
+		LoadCheckPoints();
 	}
 
     void Update()//このアップデートが他と同一かって話よな。一応。フレームレート指定しよう。
@@ -75,7 +76,6 @@ public class EditorExWindow03 : EditorWindow
 			if (timeSlider % 50 == 0)//ある程度の周期ごとに行う演算？
 			{
 				audioSource.time = (float)(timeSlider / 30.0f);//音楽の方じゃなくて描画側を同期するべきでは->スライダの値自体を全てのオブジェクトで同期しないと難しい。
-				//timeSlider = (int)audioSource.time * 30;
 			}
 
 			timeSlider++;
@@ -86,7 +86,7 @@ public class EditorExWindow03 : EditorWindow
 				EditorApplication.ExecuteMenuItem("Edit/Play");//停止（再生）
 			}
 
-			//フレーム番号代入
+			//フレーム番号代入（実行中のみなので注意、基本的に参照はtimeSliderで。）
 			rabuka.GetComponent<Rabuka>().frame = timeSlider;
 		}
 		//実行外含有update
@@ -118,6 +118,8 @@ public class EditorExWindow03 : EditorWindow
 					{
 						EditorGUILayout.LabelField("オーディオクリップの長さは" + audioSource.clip.length.ToString() + "秒です。");
 					}
+					//ラブカのサウンドオブジェクトを更新
+					rabuka.GetComponent<Rabuka>().soundObject = soundObject;
 				}
 				else
 				{
@@ -129,7 +131,7 @@ public class EditorExWindow03 : EditorWindow
 			//選択中のオブジェクトをボタンで入れる
 			selectedGameObject = EditorGUILayout.ObjectField("SELECTED OBJECT ", selectedGameObject, typeof(GameObject), true) as GameObject;
 			//オブジェクト追加ボタン
-			if (GUILayout.Button("オブジェクト追加", GUILayout.Width(120), GUILayout.Height(20)))
+			if (GUILayout.Button("選択中のオブジェクトを追加", GUILayout.Width(150), GUILayout.Height(30)))
             {
                 if (selectedGameObject)//ぬるなら入らない。
 				{ 
@@ -149,11 +151,13 @@ public class EditorExWindow03 : EditorWindow
 					{
 						if (g != null)//多分必要ないがエラー対策
 						{
+							//----オブジェクトがどんな種類でも共通の処理-----
+							EditorGUILayout.LabelField("OBJECT NUMBER: " + index.ToString());
 							//じゃあとりあえず、自動でオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
 							if (g.GetComponent<Text>())//テキストオブジェクトと判定。
 							{
-								EditorGUILayout.LabelField("Name: " + g.name);
-								EditorGUILayout.LabelField("TEXT OBJECT");
+								//EditorGUILayout.LabelField("Name: " + g.name);
+								EditorGUILayout.LabelField("TYPE TEXT: " + g.GetFullPath());
 								TextCheckPointDisplay(g, index);
 							}
 							else
@@ -174,7 +178,6 @@ public class EditorExWindow03 : EditorWindow
 
 	void TextCheckPointDisplay(GameObject targetObject, int objectIndex)//Textオブジェクトだった場合の（そのターゲとオブジェクト固有の）表示
     {
-		//Debug.Log(objectIndex.ToString());
 		GameObject checkPointParent = rabuka.transform.Find("TargetObject:" + objectIndex.ToString()).gameObject;
 		if(checkPointParent == null)
         {
@@ -198,12 +201,22 @@ public class EditorExWindow03 : EditorWindow
 				{
 					EditorGUILayout.LabelField("Text:" + checkPoint.GetComponent<CheckPointText>().text);
 					EditorGUILayout.LabelField("Frame:" + checkPoint.GetComponent<CheckPointText>().frameNum.ToString());
-					
 				}
 				EditorGUILayout.EndVertical();
 			}
 		}
 		EditorGUILayout.EndHorizontal();
+	}
+
+	void LoadCheckPoints()
+    {
+		for (i = 0; i < rabuka.transform.childCount; i++)
+		{
+			tmpObject = rabuka.transform.GetChild(i).gameObject;
+			checkPointList.Add(new List<GameObject>());
+			for (j = 0; j < tmpObject.transform.childCount; j++)
+				checkPointList[i].Add(tmpObject.transform.GetChild(j).gameObject);
+		}
 	}
 
 }

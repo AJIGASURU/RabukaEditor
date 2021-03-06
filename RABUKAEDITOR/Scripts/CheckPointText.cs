@@ -6,13 +6,7 @@ using System;
 
 public class CheckPointText : CheckPoint
 {
-    public char[] textChar;
     public string text;
-
-    void Start()
-    {
-        this.rabuka = GameObject.Find("Rabuka").GetComponent<Rabuka>();
-    }
 
     void Update()
     {
@@ -26,7 +20,6 @@ public class CheckPointText : CheckPoint
     {
         this.targetObject = targetObject;
         this.text = targetObject.GetComponent<Text>().text;
-        Debug.Log(text);
         this.frameNum = frame;
     }
 
