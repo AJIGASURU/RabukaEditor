@@ -29,7 +29,7 @@ public class EditorExWindow03 : EditorWindow
 	GameObject rabuka;//司令塔、情報はここに保存するか？
 
     //for用
-    int i = 0, j = 0, k = 0;
+    //int i = 0, j = 0, k = 0;
 
 	[MenuItem("Window/RABUKA EDITOR")]//よく考えたらなんだこれ
 
@@ -143,21 +143,20 @@ public class EditorExWindow03 : EditorWindow
 
 			objectsScrollPos = EditorGUILayout.BeginScrollView(objectsScrollPos, GUI.skin.box);
 			{
-				int index = 0;
-				foreach(GameObject g in rabuka.GetComponent<Rabuka>().objectList)//インデックスつける？
+				for(int i = 0; i < rabuka.GetComponent<Rabuka>().objectList.Count; i++)//インデックスつける？
                 {
 					EditorGUILayout.BeginVertical(GUI.skin.box);//縦
 					{
-						if (g != null)//多分必要ないがエラー対策
+						if (rabuka.GetComponent<Rabuka>().objectList[i] != null)//多分必要ないがエラー対策
 						{
 							//----オブジェクトがどんな種類でも共通の処理-----
-							EditorGUILayout.LabelField("OBJECT NUMBER: " + index.ToString());
+							EditorGUILayout.LabelField("OBJECT NUMBER: " + i.ToString());
 							//じゃあとりあえず、自動でオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
-							if (g.GetComponent<Text>())//テキストオブジェクトと判定。
+							if (rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<Text>())//テキストオブジェクトと判定。
 							{
 								//EditorGUILayout.LabelField("Name: " + g.name);
-								EditorGUILayout.LabelField("TYPE TEXT: " + g.GetFullPath());
-								TextCheckPointDisplay(g, index);
+								EditorGUILayout.LabelField("TYPE TEXT: " + rabuka.GetComponent<Rabuka>().objectList[i].GetFullPath());
+								TextCheckPointDisplay(rabuka.GetComponent<Rabuka>().objectList[i], i);
 							}
 							else
 							{
@@ -167,7 +166,6 @@ public class EditorExWindow03 : EditorWindow
 						}
 					}
 					EditorGUILayout.EndVertical();
-					index++;
 				}
 			}
 			EditorGUILayout.EndScrollView();
@@ -177,7 +175,7 @@ public class EditorExWindow03 : EditorWindow
 
 	void TextCheckPointDisplay(GameObject targetObject, int objectIndex)//Textオブジェクトだった場合の（そのターゲとオブジェクト固有の）表示
     {
-		GameObject checkPointParent = rabuka.transform.Find("TargetObject:" + objectIndex.ToString()).gameObject;
+		GameObject checkPointParent = rabuka.transform.GetChild(objectIndex).gameObject;
 		if(checkPointParent == null)
         {
 			Debug.Log("エラー:TextCheckPointDisplay()");
@@ -185,6 +183,7 @@ public class EditorExWindow03 : EditorWindow
 		//チェックポイント追加（関数にするべきだけど優先的ではない）
 		if (GUILayout.Button("今の条件でチェックポイントを追加", GUILayout.Width(400), GUILayout.Height(30)))
 		{
+			//削除された後、オブジェクト名のインデックスが戻るのでファインドは使わないこと
 			tmpObject = new GameObject("TextCheckPoint:" + checkPointList[objectIndex].Count.ToString());//これして親消えないかな・・・？わからん。
 			tmpObject.transform.SetParent(checkPointParent.transform);
 			tmpObject.AddComponent<CheckPointText>();
@@ -194,18 +193,18 @@ public class EditorExWindow03 : EditorWindow
 
 		EditorGUILayout.BeginHorizontal(GUI.skin.box, GUILayout.Width(200));
 		{
-			for (i = 0; i < checkPointList[objectIndex].Count; i++)//チェックポイントごと
+			for (int j = 0; j < checkPointList[objectIndex].Count; j++)//チェックポイントごと jじゃなくてiで良さそう。
 			{
 				EditorGUILayout.BeginVertical(GUI.skin.box);
 				{
-					EditorGUILayout.LabelField("Text:" + checkPointList[objectIndex][i].GetComponent<CheckPointText>().text);
-					EditorGUILayout.LabelField("Frame:" + checkPointList[objectIndex][i].GetComponent<CheckPointText>().frameNum.ToString());
+					EditorGUILayout.LabelField("Text:" + checkPointList[objectIndex][j].GetComponent<CheckPointText>().text);
+					EditorGUILayout.LabelField("Frame:" + checkPointList[objectIndex][j].GetComponent<CheckPointText>().frameNum.ToString());
 
 					//どのチェックポイントにも共通する処理は関数にでもするか。
 					if (GUILayout.Button("削除", GUILayout.Width(100), GUILayout.Height(30)))
 					{
-						GameObject.DestroyImmediate(checkPointList[objectIndex][i]);
-						checkPointList[objectIndex].Remove(checkPointList[objectIndex][i]);
+						GameObject.DestroyImmediate(checkPointList[objectIndex][j]);
+						checkPointList[objectIndex].Remove(checkPointList[objectIndex][j]);
 					}
 				}
 				EditorGUILayout.EndVertical();
@@ -216,11 +215,11 @@ public class EditorExWindow03 : EditorWindow
 
 	void LoadCheckPoints()
     {
-		for (i = 0; i < rabuka.transform.childCount; i++)
+		for (int i = 0; i < rabuka.transform.childCount; i++)
 		{
 			tmpObject = rabuka.transform.GetChild(i).gameObject;
 			checkPointList.Add(new List<GameObject>());
-			for (j = 0; j < tmpObject.transform.childCount; j++)
+			for (int j = 0; j < tmpObject.transform.childCount; j++)
 				checkPointList[i].Add(tmpObject.transform.GetChild(j).gameObject);
 		}
 	}
