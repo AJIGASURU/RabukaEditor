@@ -23,7 +23,7 @@ public class EditorExWindow03 : EditorWindow
 
 	//CheckPoint
 	//2次元リストバージョン（チェックポイントだけ持って、ターゲットオブジェクト自体は最悪持たない手もある。）
-	List<List<GameObject>> checkPointList = new List<List<GameObject>>();
+	List<List<GameObject>> checkPointList = new List<List<GameObject>>();//どうにかこれを使わないようにするべきらしい。
 
 	//出現系オブジェクト
 	GameObject rabuka;//司令塔、情報はここに保存するか？
@@ -149,7 +149,7 @@ public class EditorExWindow03 : EditorWindow
 					{
 						if (rabuka.GetComponent<Rabuka>().objectList[i] != null)//多分必要ないがエラー対策
 						{
-							//----オブジェクトがどんな種類でも共通の処理-----
+							//----オブジェクトがどんな種類でも共通の処理-----ターゲットが変わるのは流石に不味くないか。
 							EditorGUILayout.LabelField("OBJECT NUMBER: " + i.ToString());
 							//じゃあとりあえず、自動でオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
 							if (rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<Text>())//テキストオブジェクトと判定。
@@ -201,7 +201,7 @@ public class EditorExWindow03 : EditorWindow
 					EditorGUILayout.LabelField("Frame:" + checkPointList[objectIndex][j].GetComponent<CheckPointText>().frameNum.ToString());
 
 					//どのチェックポイントにも共通する処理は関数にでもするか。
-					if (GUILayout.Button("削除", GUILayout.Width(100), GUILayout.Height(30)))
+					if (GUILayout.Button("チェックポイント削除", GUILayout.Width(150), GUILayout.Height(30)))
 					{
 						GameObject.DestroyImmediate(checkPointList[objectIndex][j]);
 						checkPointList[objectIndex].Remove(checkPointList[objectIndex][j]);
