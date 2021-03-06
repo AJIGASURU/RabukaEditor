@@ -21,15 +21,8 @@ public class EditorExWindow03 : EditorWindow
 	//Scroll
 	Vector2 objectsScrollPos = Vector2.zero;//これも増やすのいややんなあ。
 
-	//CheckPoint
-	//2次元リストバージョン（チェックポイントだけ持って、ターゲットオブジェクト自体は最悪持たない手もある。）
-	//List<List<GameObject>> checkPointList = new List<List<GameObject>>();//どうにかこれを使わないようにするべきらしい。
-
 	//出現系オブジェクト
 	GameObject rabuka;//司令塔、情報はここに保存するか？
-
-    //for用
-    //int i = 0, j = 0, k = 0;
 
 	[MenuItem("Window/RABUKA EDITOR")]//よく考えたらなんだこれ
 
@@ -57,8 +50,6 @@ public class EditorExWindow03 : EditorWindow
 				soundObject = rabuka.GetComponent<Rabuka>().soundObject;
 			}
         }
-		//チェックポイントのロード->要らなくなるように修正？というか実行中ってGUI通らないのかもしかして？
-		//LoadCheckPoints();
 	}
 
     void Update()//このアップデートが他と同一かって話よな。一応。フレームレート指定しよう。
@@ -134,7 +125,6 @@ public class EditorExWindow03 : EditorWindow
                 if (selectedGameObject)//ぬるなら入らない。
 				{ 
 					rabuka.GetComponent<Rabuka>().objectList.Add(selectedGameObject);
-					//checkPointList.Add(new List<GameObject>());
 					tmpObject = new GameObject("TargetObject:" + (rabuka.GetComponent<Rabuka>().objectList.Count - 1).ToString());
 					tmpObject.transform.SetParent(rabuka.transform);//ラブ下につけます。
 				}
@@ -153,7 +143,6 @@ public class EditorExWindow03 : EditorWindow
 							//じゃあとりあえず、自動でオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
 							if (rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<Text>())//テキストオブジェクトと判定。
 							{
-								//EditorGUILayout.LabelField("Name: " + g.name);
 								EditorGUILayout.LabelField("TYPE TEXT: " + rabuka.GetComponent<Rabuka>().objectList[i].GetFullPath());
 								TextCheckPointDisplay(rabuka.GetComponent<Rabuka>().objectList[i], i);
 							}
@@ -180,15 +169,24 @@ public class EditorExWindow03 : EditorWindow
 			Debug.Log("エラー:TextCheckPointDisplay()");
         }
 		//チェックポイント追加（関数にするべきだけど優先的ではない）
-		if (GUILayout.Button("今の条件でチェックポイントを追加", GUILayout.Width(400), GUILayout.Height(30)))
+		EditorGUILayout.BeginHorizontal(GUI.skin.box);
 		{
-			//削除された後、オブジェクト名のインデックスが戻るのでファインドは使わないこと
-			tmpObject = new GameObject("TextCheckPoint:" + (checkPointParent.transform.childCount - 1).ToString());
-			tmpObject.transform.SetParent(checkPointParent.transform);
-			tmpObject.AddComponent<CheckPointText>();
-			tmpObject.GetComponent<CheckPointText>().SetCheckPoint(targetObject, timeSlider);
-			//checkPointList[objectIndex].Add(tmpObject);
+			if (GUILayout.Button("今の条件でチェックポイントを追加", GUILayout.Width(300), GUILayout.Height(30)))
+			{
+				//削除された後、オブジェクト名のインデックスが戻るのでファインドは使わないこと
+				tmpObject = new GameObject("TextCheckPoint:" + (checkPointParent.transform.childCount - 1).ToString());
+				tmpObject.transform.SetParent(checkPointParent.transform);
+				tmpObject.AddComponent<CheckPointText>();
+				tmpObject.GetComponent<CheckPointText>().SetCheckPoint(targetObject, timeSlider);
+			}
+			if (GUILayout.Button("このオブジェクトを削除", GUILayout.Width(300), GUILayout.Height(30)))
+			{
+				rabuka.GetComponent<Rabuka>().objectList.RemoveAt(objectIndex);
+				GameObject.DestroyImmediate(checkPointParent);
+				return;//ゴリ押しジャン。
+			}
 		}
+		EditorGUILayout.EndHorizontal();
 
 		EditorGUILayout.BeginHorizontal(GUI.skin.box, GUILayout.Width(200));
 		{
@@ -203,7 +201,6 @@ public class EditorExWindow03 : EditorWindow
 					if (GUILayout.Button("チェックポイント削除", GUILayout.Width(150), GUILayout.Height(30)))
 					{
 						GameObject.DestroyImmediate(checkPointParent.transform.GetChild(j).gameObject);
-						//checkPointList[objectIndex].Remove(checkPointList[objectIndex][j]);
 					}
 				}
 				EditorGUILayout.EndVertical();
@@ -211,18 +208,5 @@ public class EditorExWindow03 : EditorWindow
 		}
 		EditorGUILayout.EndHorizontal();
 	}
-
-	/*
-	void LoadCheckPoints()
-    {
-		for (int i = 0; i < rabuka.transform.childCount; i++)
-		{
-			tmpObject = rabuka.transform.GetChild(i).gameObject;
-			checkPointList.Add(new List<GameObject>());
-			for (int j = 0; j < tmpObject.transform.childCount; j++)
-				checkPointList[i].Add(tmpObject.transform.GetChild(j).gameObject);
-		}
-	}
-	*/
 
 }
