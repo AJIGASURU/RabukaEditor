@@ -145,6 +145,17 @@ public class EditorExWindow03 : EditorWindow
 							{
 								EditorGUILayout.LabelField("TYPE TEXT: " + rabuka.GetComponent<Rabuka>().objectList[i].GetFullPath());
 								TextCheckPointDisplay(rabuka.GetComponent<Rabuka>().objectList[i], i);
+							}else if (rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<Camera>())
+                            {
+                                if (!rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<PostEffect>())//ポストエフェクトの準備（まあ要らないけど）
+                                {
+									rabuka.GetComponent<Rabuka>().objectList[i].AddComponent<PostEffect>();
+									Material cameraMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/RABUKAEDITOR/Scripts/Camera/CameraMaterial.mat");
+									rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<PostEffect>()._material = cameraMaterial;
+									rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<PostEffect>()._material.shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/RabukaEditor/Scripts/Camera/posteffect.shader");
+								}
+								EditorGUILayout.LabelField("TYPE CAMERA: " + rabuka.GetComponent<Rabuka>().objectList[i].GetFullPath());
+								CameraCheckPointDisplay(rabuka.GetComponent<Rabuka>().objectList[i], i);
 							}
 							else
 							{
@@ -174,7 +185,7 @@ public class EditorExWindow03 : EditorWindow
 			if (GUILayout.Button("今の条件でチェックポイントを追加", GUILayout.Width(300), GUILayout.Height(30)))
 			{
 				//削除された後、オブジェクト名のインデックスが戻るのでファインドは使わないこと
-				tmpObject = new GameObject("TextCheckPoint:" + (checkPointParent.transform.childCount - 1).ToString());
+				tmpObject = new GameObject("TextCheckPoint:" + (checkPointParent.transform.childCount).ToString());
 				tmpObject.transform.SetParent(checkPointParent.transform);
 				tmpObject.AddComponent<CheckPointText>();
 				tmpObject.GetComponent<CheckPointText>().SetCheckPoint(targetObject, timeSlider);
@@ -188,15 +199,78 @@ public class EditorExWindow03 : EditorWindow
 		}
 		EditorGUILayout.EndHorizontal();
 
-		EditorGUILayout.BeginHorizontal(GUI.skin.box, GUILayout.Width(200));
+		EditorGUILayout.BeginHorizontal(GUI.skin.box, GUILayout.Width(500));
 		{
 			for (int j = 0; j < checkPointParent.transform.childCount; j++)//チェックポイントごと jじゃなくてiで良さそう。
 			{
-				EditorGUILayout.BeginVertical(GUI.skin.box);
+				EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(250));
 				{
-					EditorGUILayout.LabelField("Text:" + checkPointParent.transform.GetChild(j).gameObject.GetComponent<CheckPointText>().text);
-					EditorGUILayout.LabelField("Frame:" + checkPointParent.transform.GetChild(j).gameObject.GetComponent<CheckPointText>().frameNum.ToString());
+					tmpObject = checkPointParent.transform.GetChild(j).gameObject;
+					//チェックポイントごとの表示
+					//EditorGUILayout.LabelField("Text:" + checkPointParent.transform.GetChild(j).gameObject.GetComponent<CheckPointText>().text);
+					//EditorGUILayout.LabelField("Frame:" + checkPointParent.transform.GetChild(j).gameObject.GetComponent<CheckPointText>().frameNum.ToString());
+					tmpObject.GetComponent<CheckPointText>().text = EditorGUILayout.TextField("Text", tmpObject.GetComponent<CheckPointText>().text);
+					tmpObject.GetComponent<CheckPointText>().frameNum = EditorGUILayout.IntField("Frame", tmpObject.GetComponent<CheckPointText>().frameNum);
+					tmpObject.GetComponent<CheckPointText>().fontSize = EditorGUILayout.IntField("FontSize", tmpObject.GetComponent<CheckPointText>().fontSize);
+					tmpObject.GetComponent<CheckPointText>().color = EditorGUILayout.ColorField("Color", tmpObject.GetComponent<CheckPointText>().color);
+					tmpObject.GetComponent<CheckPointText>().position = EditorGUILayout.Vector3Field("Position", tmpObject.GetComponent<CheckPointText>().position);
+					tmpObject.GetComponent<CheckPointText>().rotation = EditorGUILayout.Vector3Field("Rotation", tmpObject.GetComponent<CheckPointText>().rotation);
+					tmpObject.GetComponent<CheckPointText>().scale = EditorGUILayout.Vector3Field("Scale", tmpObject.GetComponent<CheckPointText>().scale);
+					//どのチェックポイントにも共通する処理は関数にでもするか。
+					if (GUILayout.Button("チェックポイント削除", GUILayout.Width(150), GUILayout.Height(30)))
+					{
+						GameObject.DestroyImmediate(checkPointParent.transform.GetChild(j).gameObject);
+					}
+				}
+				EditorGUILayout.EndVertical();
+			}
+		}
+		EditorGUILayout.EndHorizontal();
+	}
 
+	void CameraCheckPointDisplay(GameObject targetObject, int objectIndex)//Textオブジェクトだった場合の（そのターゲとオブジェクト固有の）表示
+	{
+		GameObject checkPointParent = rabuka.transform.GetChild(objectIndex).gameObject;//objectIndex->i
+		if (checkPointParent == null)
+		{
+			Debug.Log("エラー:CameraCheckPointDisplay()");
+		}
+		//チェックポイント追加（関数にするべきだけど優先的ではない）
+		EditorGUILayout.BeginHorizontal(GUI.skin.box);
+		{
+			if (GUILayout.Button("今の条件でチェックポイントを追加", GUILayout.Width(300), GUILayout.Height(30)))
+			{
+				tmpObject = new GameObject("CameraCheckPoint:" + (checkPointParent.transform.childCount).ToString());
+				tmpObject.transform.SetParent(checkPointParent.transform);
+				tmpObject.AddComponent<CheckPointCamera>();
+				tmpObject.GetComponent<CheckPointCamera>().SetCheckPoint(targetObject, timeSlider);
+			}
+			if (GUILayout.Button("このオブジェクトを削除", GUILayout.Width(300), GUILayout.Height(30)))
+			{
+				rabuka.GetComponent<Rabuka>().objectList.RemoveAt(objectIndex);
+				GameObject.DestroyImmediate(checkPointParent);
+				return;//ゴリ押しジャン。
+			}
+		}
+		EditorGUILayout.EndHorizontal();
+
+		EditorGUILayout.BeginHorizontal(GUI.skin.box, GUILayout.Width(500));
+		{
+			for (int j = 0; j < checkPointParent.transform.childCount; j++)//チェックポイントごと jじゃなくてiで良さそう。
+			{
+				EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(250));
+				{
+					tmpObject = checkPointParent.transform.GetChild(j).gameObject;
+					//チェックポイントごとの表示
+					//EditorGUILayout.LabelField("Text:" + checkPointParent.transform.GetChild(j).gameObject.GetComponent<CheckPointText>().text);
+					//EditorGUILayout.LabelField("Frame:" + checkPointParent.transform.GetChild(j).gameObject.GetComponent<CheckPointText>().frameNum.ToString());
+					//tmpObject.GetComponent<CheckPointText>().text = EditorGUILayout.TextField("Text", tmpObject.GetComponent<CheckPointText>().text);
+					tmpObject.GetComponent<CheckPointCamera>().frameNum = EditorGUILayout.IntField("Frame", tmpObject.GetComponent<CheckPointCamera>().frameNum);
+					//tmpObject.GetComponent<CheckPointText>().fontSize = EditorGUILayout.IntField("FontSize", tmpObject.GetComponent<CheckPointText>().fontSize);
+					//tmpObject.GetComponent<CheckPointText>().color = EditorGUILayout.ColorField("Color", tmpObject.GetComponent<CheckPointText>().color);
+					//tmpObject.GetComponent<CheckPointText>().position = EditorGUILayout.Vector3Field("Position", tmpObject.GetComponent<CheckPointText>().position);
+					//tmpObject.GetComponent<CheckPointText>().rotation = EditorGUILayout.Vector3Field("Rotation", tmpObject.GetComponent<CheckPointText>().rotation);
+					//tmpObject.GetComponent<CheckPointText>().scale = EditorGUILayout.Vector3Field("Scale", tmpObject.GetComponent<CheckPointText>().scale);
 					//どのチェックポイントにも共通する処理は関数にでもするか。
 					if (GUILayout.Button("チェックポイント削除", GUILayout.Width(150), GUILayout.Height(30)))
 					{

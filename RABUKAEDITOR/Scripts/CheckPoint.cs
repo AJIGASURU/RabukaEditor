@@ -5,9 +5,9 @@ using UnityEngine.UI;
 
 public class CheckPoint : MonoBehaviour
 {
+    public Rabuka rabuka;
     public int frameNum;//変化が起こるフレームの位置番号
     public GameObject targetObject;
-    public Rabuka rabuka;
 
     void Start()
     {
