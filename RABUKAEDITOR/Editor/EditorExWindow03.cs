@@ -145,7 +145,8 @@ public class EditorExWindow03 : EditorWindow
 							{
 								EditorGUILayout.LabelField("TYPE TEXT: " + rabuka.GetComponent<Rabuka>().objectList[i].GetFullPath());
 								TextCheckPointDisplay(rabuka.GetComponent<Rabuka>().objectList[i], i);
-							}else if (rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<Camera>())
+							}
+							else if (rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<Camera>())
                             {
                                 if (!rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<PostEffect>())//ポストエフェクトの準備（まあ要らないけど）
                                 {
@@ -262,15 +263,11 @@ public class EditorExWindow03 : EditorWindow
 				{
 					tmpObject = checkPointParent.transform.GetChild(j).gameObject;
 					//チェックポイントごとの表示
-					//EditorGUILayout.LabelField("Text:" + checkPointParent.transform.GetChild(j).gameObject.GetComponent<CheckPointText>().text);
-					//EditorGUILayout.LabelField("Frame:" + checkPointParent.transform.GetChild(j).gameObject.GetComponent<CheckPointText>().frameNum.ToString());
-					//tmpObject.GetComponent<CheckPointText>().text = EditorGUILayout.TextField("Text", tmpObject.GetComponent<CheckPointText>().text);
 					tmpObject.GetComponent<CheckPointCamera>().frameNum = EditorGUILayout.IntField("Frame", tmpObject.GetComponent<CheckPointCamera>().frameNum);
-					//tmpObject.GetComponent<CheckPointText>().fontSize = EditorGUILayout.IntField("FontSize", tmpObject.GetComponent<CheckPointText>().fontSize);
-					//tmpObject.GetComponent<CheckPointText>().color = EditorGUILayout.ColorField("Color", tmpObject.GetComponent<CheckPointText>().color);
-					//tmpObject.GetComponent<CheckPointText>().position = EditorGUILayout.Vector3Field("Position", tmpObject.GetComponent<CheckPointText>().position);
-					//tmpObject.GetComponent<CheckPointText>().rotation = EditorGUILayout.Vector3Field("Rotation", tmpObject.GetComponent<CheckPointText>().rotation);
-					//tmpObject.GetComponent<CheckPointText>().scale = EditorGUILayout.Vector3Field("Scale", tmpObject.GetComponent<CheckPointText>().scale);
+					tmpObject.GetComponent<CheckPointCamera>().color = EditorGUILayout.ColorField("Color", tmpObject.GetComponent<CheckPointCamera>().color);
+					tmpObject.GetComponent<CheckPointCamera>().overlayColor = EditorGUILayout.ColorField("OverLay", tmpObject.GetComponent<CheckPointCamera>().overlayColor);
+					tmpObject.GetComponent<CheckPointCamera>().position = EditorGUILayout.Vector3Field("Position", tmpObject.GetComponent<CheckPointCamera>().position);
+					tmpObject.GetComponent<CheckPointCamera>().rotation = EditorGUILayout.Vector3Field("Rotation", tmpObject.GetComponent<CheckPointCamera>().rotation);
 					//どのチェックポイントにも共通する処理は関数にでもするか。
 					if (GUILayout.Button("チェックポイント削除", GUILayout.Width(150), GUILayout.Height(30)))
 					{

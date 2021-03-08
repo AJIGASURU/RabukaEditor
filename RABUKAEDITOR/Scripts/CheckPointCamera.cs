@@ -15,6 +15,11 @@ public class CheckPointCamera : CheckPoint
     public Vector3 scale;
     */
 
+    public Color color;
+    public Color overlayColor;
+    public Vector3 position;
+    public Vector3 rotation;
+
     void Update()
     {
         if(this.rabuka.frame == this.frameNum)
@@ -27,6 +32,11 @@ public class CheckPointCamera : CheckPoint
     {
         this.targetObject = targetObject;
         this.frameNum = frame;
+        this.color = targetObject.GetComponent<PostEffect>()._material.GetColor("_Color");
+        this.overlayColor = targetObject.GetComponent<PostEffect>()._material.GetColor("_Color2");
+        this.position = targetObject.transform.position;
+        this.rotation = targetObject.transform.rotation.eulerAngles;
+
         /*
         this.text = targetObject.GetComponent<Text>().text;
         this.fontSize = targetObject.GetComponent<Text>().fontSize;
@@ -39,6 +49,10 @@ public class CheckPointCamera : CheckPoint
 
     public void LoadCheckPoint()//これポインタ的に使えるのか？
     {
+        targetObject.GetComponent<PostEffect>()._material.SetColor("_Color", this.color);
+        targetObject.GetComponent<PostEffect>()._material.SetColor("_Color2", this.overlayColor);
+        targetObject.transform.SetPositionAndRotation(this.position, Quaternion.Euler(this.rotation));
+
         /*
         this.targetObject.GetComponent<Text>().text = this.text;
         targetObject.GetComponent<Text>().fontSize = this.fontSize;
