@@ -63,13 +63,13 @@ public class EditorExWindow03 : EditorWindow
 				audioSource.Play();
             }
 
-			if (timeSlider % 30 == 0)//ある程度の周期ごとに行う演算？
+			if (timeSlider % 10 == 0)//ある程度の周期ごとに行う演算？
 			{
 				audioSource.time = (float)(timeSlider / 30.0f);//音楽の方じゃなくて描画側を同期するべきでは->スライダの値自体を全てのオブジェクトで同期しないと難しい。
 			}
 
 			timeSlider++;
-			Repaint();//再描画
+			//Repaint();//再描画（編集モード）
 
 			if(timeSlider == maxFrame)//最後に来たら終了。
             {
@@ -183,14 +183,6 @@ public class EditorExWindow03 : EditorWindow
 		//チェックポイント追加（関数にするべきだけど優先的ではない）
 		EditorGUILayout.BeginHorizontal(GUI.skin.box);
 		{
-			if (GUILayout.Button("今の条件でチェックポイントを追加", GUILayout.Width(300), GUILayout.Height(30)))
-			{
-				//削除された後、オブジェクト名のインデックスが戻るのでファインドは使わないこと
-				tmpObject = new GameObject("TextCheckPoint:" + (checkPointParent.transform.childCount).ToString());
-				tmpObject.transform.SetParent(checkPointParent.transform);
-				tmpObject.AddComponent<CheckPointText>();
-				tmpObject.GetComponent<CheckPointText>().SetCheckPoint(targetObject, timeSlider);
-			}
 			if (GUILayout.Button("このオブジェクトを削除", GUILayout.Width(300), GUILayout.Height(30)))
 			{
 				rabuka.GetComponent<Rabuka>().objectList.RemoveAt(objectIndex);
@@ -225,6 +217,14 @@ public class EditorExWindow03 : EditorWindow
 				}
 				EditorGUILayout.EndVertical();
 			}
+			if (GUILayout.Button("チェックポイント追加", GUILayout.Width(200), GUILayout.Height(30)))
+			{
+				//削除された後、オブジェクト名のインデックスが戻るのでファインドは使わないこと
+				tmpObject = new GameObject("TextCheckPoint:" + (checkPointParent.transform.childCount).ToString());
+				tmpObject.transform.SetParent(checkPointParent.transform);
+				tmpObject.AddComponent<CheckPointText>();
+				tmpObject.GetComponent<CheckPointText>().SetCheckPoint(targetObject, timeSlider);
+			}
 		}
 		EditorGUILayout.EndHorizontal();
 	}
@@ -239,13 +239,6 @@ public class EditorExWindow03 : EditorWindow
 		//チェックポイント追加（関数にするべきだけど優先的ではない）
 		EditorGUILayout.BeginHorizontal(GUI.skin.box);
 		{
-			if (GUILayout.Button("今の条件でチェックポイントを追加", GUILayout.Width(300), GUILayout.Height(30)))
-			{
-				tmpObject = new GameObject("CameraCheckPoint:" + (checkPointParent.transform.childCount).ToString());
-				tmpObject.transform.SetParent(checkPointParent.transform);
-				tmpObject.AddComponent<CheckPointCamera>();
-				tmpObject.GetComponent<CheckPointCamera>().SetCheckPoint(targetObject, timeSlider);
-			}
 			if (GUILayout.Button("このオブジェクトを削除", GUILayout.Width(300), GUILayout.Height(30)))
 			{
 				rabuka.GetComponent<Rabuka>().objectList.RemoveAt(objectIndex);
@@ -275,6 +268,13 @@ public class EditorExWindow03 : EditorWindow
 					}
 				}
 				EditorGUILayout.EndVertical();
+			}
+			if (GUILayout.Button("チェックポイント追加", GUILayout.Width(200), GUILayout.Height(30)))
+			{
+				tmpObject = new GameObject("CameraCheckPoint:" + (checkPointParent.transform.childCount).ToString());
+				tmpObject.transform.SetParent(checkPointParent.transform);
+				tmpObject.AddComponent<CheckPointCamera>();
+				tmpObject.GetComponent<CheckPointCamera>().SetCheckPoint(targetObject, timeSlider);
 			}
 		}
 		EditorGUILayout.EndHorizontal();
