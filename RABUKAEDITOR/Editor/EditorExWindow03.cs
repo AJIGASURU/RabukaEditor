@@ -195,9 +195,9 @@ public class EditorExWindow03 : EditorWindow
 								//カメラにポストエフェクト追加
 								targetObject.AddComponent<PostEffect>();
 								//このパスまずいかも・・・。
-								Material cameraMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/RABUKAEDITOR/Scripts/Camera/CameraMaterial.mat");
+								Material cameraMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/RabukaEditor/RABUKAEDITOR/Scripts/Camera/CameraMaterial.mat");
 								targetObject.GetComponent<PostEffect>()._material = cameraMaterial;
-								targetObject.GetComponent<PostEffect>()._material.shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/RABUKAEDITOR/Scripts/Camera/posteffect.shader");
+								targetObject.GetComponent<PostEffect>()._material.shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/RabukaEditor/RABUKAEDITOR/Scripts/Camera/posteffect.shader");
 							}
 							EditorGUILayout.LabelField("TYPE:CAMERA   PATH:" + targetObject.GetFullPath());
 							CameraCheckPointDisplay(objectInstructor);
