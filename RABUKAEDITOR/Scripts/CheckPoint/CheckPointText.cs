@@ -13,8 +13,16 @@ public class CheckPointText : CheckPoint
     public Vector3 rotation;
     public Vector3 scale;
 
+    //スピード(移動処理)
+
+    private void Start()
+    {
+        //スピードの処理するならチェックポイントの親経由。
+    }
+
     void Update()
     {
+        //フレームが設定された位置に達したら、チェックポイントをロードする
         if(this.rabuka.frame == this.frameNum)
         {
             LoadCheckPoint();
@@ -35,7 +43,7 @@ public class CheckPointText : CheckPoint
 
     public void LoadCheckPoint()//これポインタ的に使えるのか？
     {
-        this.targetObject.GetComponent<Text>().text = this.text;
+        targetObject.GetComponent<Text>().text = this.text;
         targetObject.GetComponent<Text>().fontSize = this.fontSize;
         targetObject.GetComponent<Text>().color = this.color;
         targetObject.GetComponent<RectTransform>().localPosition = this.position;

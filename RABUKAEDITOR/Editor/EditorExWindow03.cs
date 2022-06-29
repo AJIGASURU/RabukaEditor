@@ -3,19 +3,26 @@ using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using nsRabuka;
 
 public class EditorExWindow03 : EditorWindow
 {
+	//==========================================================
+	//メンバ変数>>>
+
+	//スライダ
 	public int timeSlider = 0;
+	//最大フレーム番号
 	int maxFrame = 1000;
 
-	//SOUND OBJ
+	//SOUND OBJ この仕様も変更しなければ・・・・！
 	GameObject soundObject;
 	AudioSource audioSource;
 	bool inspectorTitlebarForSound = false;
 
-	//Other OBJ
-	GameObject selectedGameObject;//洗濯中オブジェクト追加用
+	//OTHER OBJ
+	GameObject selectedGameObject;//選択中オブジェクト追加用
+	GameObject objInstructorParent;//インストラクタの親 ラブカに下げる
 	GameObject tmpObject;//必ず一時的に使ってください!!!!!
 
 	//Scroll
@@ -24,27 +31,32 @@ public class EditorExWindow03 : EditorWindow
 	//出現系オブジェクト
 	GameObject rabuka;//司令塔、情報はここに保存するか？
 
+	//メンバ変数<<<
+	//==========================================================
+
 	[MenuItem("Window/RABUKA EDITOR")]//よく考えたらなんだこれ
 
+	//こっちはスタティック。
 	static void Open()
 	{
 		Debug.Log("Open!");
 		EditorWindow.GetWindow<EditorExWindow03>("RABUKA EDITOR");
 	}
 
-    private void Awake()
+	//新規ウィンドウが開くときに呼び出されます
+	private void Awake()
     {
 		Debug.Log("Awake!");
-		//初期化（ロード）
-		//ラブカ
-		if (!GameObject.Find("Rabuka"))
+		//初期化（ロード）->OPENに移動したほうがいいかも
+		//ラブカを設置する
+		if (!GameObject.Find(Macro.rabukaObjName))
 		{
-			rabuka = new GameObject("Rabuka");//ラブかにフレームナンバープロパティ をもつスクリプトつけよう。Rabuka.cs
+			rabuka = new GameObject(Macro.rabukaObjName);//ラブかにフレームナンバープロパティ をもつスクリプトつけよう。Rabuka.cs
 			rabuka.AddComponent<Rabuka>();
         }
         else
         {
-			rabuka = GameObject.Find("Rabuka");
+			rabuka = GameObject.Find(Macro.rabukaObjName);
             if (rabuka.GetComponent<Rabuka>().soundObject != null)
             {
 				soundObject = rabuka.GetComponent<Rabuka>().soundObject;
@@ -55,19 +67,22 @@ public class EditorExWindow03 : EditorWindow
     void Update()//このアップデートが他と同一かって話よな。一応。フレームレート指定しよう。
 	{
 		//EditorApplication.step();1フレームごと？
-		if (EditorApplication.isPlaying)//実行中UPDATE
+		if (EditorApplication.isPlaying)//実行中
 		{
-			if (audioSource != null && !audioSource.isPlaying)//おと
+			if (audioSource != null && !audioSource.isPlaying)//音再生
             {
-				audioSource.time = (float)(timeSlider / 30.0f);//同期
+				audioSource.time = (float)((float)timeSlider / Config.frameRate);//同期
 				audioSource.Play();
             }
 
-			if (timeSlider % 10 == 0)//ある程度の周期ごとに行う演算？
+			//音楽の同期（一旦保留）
+			/*
+			if (timeSlider % 10 == 0)
 			{
-				audioSource.time = (float)(timeSlider / 30.0f);//音楽の方じゃなくて描画側を同期するべきでは->スライダの値自体を全てのオブジェクトで同期しないと難しい。
+				audioSource.time = (float)(timeSlider / 30.0f);
 			}
-
+			*/
+			
 			timeSlider++;
 			//Repaint();//再描画（編集モード）
 
@@ -82,26 +97,40 @@ public class EditorExWindow03 : EditorWindow
 		//実行外含有update
 	}
 
-	void OnGUI()//不定期で通る
+	void OnGUI()//不定期で通る 描画コア関数
 	{
         EditorGUILayout.BeginVertical(GUI.skin.box);//縦
 		{
-			if (GUILayout.Button("再生/ポーズ", GUILayout.Width(200), GUILayout.Height(20)))
+			//上段
+			EditorGUILayout.BeginHorizontal(GUI.skin.box);//横
 			{
-				Debug.Log("再生ボタン");
-				EditorApplication.ExecuteMenuItem("Edit/Play");//ゲーム再生
+				//再生ボタン
+				if (GUILayout.Button(new GUIContent("再生/停止", "シーンを再生停止します"), GUILayout.Width(200), GUILayout.Height(20)))
+				{
+					Debug.Log("再生ボタン押下");
+					EditorApplication.ExecuteMenuItem("Edit/Play");//ゲーム再生、でそもそもいいの？
+				}
+				//最大フレーム数入力
+				maxFrame = EditorGUILayout.IntField("MaxFrame", maxFrame, GUILayout.Width(200), GUILayout.Height(20));
 			}
+			EditorGUILayout.EndHorizontal();
 
+			//再生スライダー、再生したら動くようにしたい。
 			timeSlider = EditorGUILayout.IntSlider("TIME（FRAME）:", timeSlider, 0, maxFrame);
+
+			//仕切り
+			GUI.color = Color.black;
+			GUILayout.Box("", GUILayout.Height(5), GUILayout.ExpandWidth(true));
+			GUI.color = Color.white;
 
 			//まず音楽再生するところ。
 			EditorGUILayout.BeginHorizontal(GUI.skin.box);//横
 			{
-				soundObject = EditorGUILayout.ObjectField("Audio", soundObject, typeof(GameObject), true) as GameObject;
+				soundObject = EditorGUILayout.ObjectField("AUDIO SELECT", soundObject, typeof(GameObject), true) as GameObject;
 				if (soundObject != null && soundObject.GetComponent<AudioSource>() != null)
 				{
 					audioSource = soundObject.GetComponent<AudioSource>();
-					maxFrame = (int)(audioSource.clip.length * 30.0f);
+					maxFrame = (int)(audioSource.clip.length * Config.frameRate);
 					inspectorTitlebarForSound = EditorGUILayout.InspectorTitlebar(inspectorTitlebarForSound, soundObject);
 					if (inspectorTitlebarForSound)
 					{
@@ -116,145 +145,162 @@ public class EditorExWindow03 : EditorWindow
 				}
 			}EditorGUILayout.EndHorizontal();
 
-			//その他のオブジェクトのところ
+			//その他のオブジェクト（アクター）のところ
+			EditorGUILayout.BeginHorizontal(GUI.skin.box);//横
+			{
 			//選択中のオブジェクトをボタンで入れる
-			selectedGameObject = EditorGUILayout.ObjectField("SELECTED OBJECT ", selectedGameObject, typeof(GameObject), true) as GameObject;
+			selectedGameObject = EditorGUILayout.ObjectField("OBJECT SELECT", selectedGameObject, typeof(GameObject), true) as GameObject;
 			//オブジェクト追加ボタン
-			if (GUILayout.Button("選択中のオブジェクトを追加", GUILayout.Width(200), GUILayout.Height(30)))
+			if (GUILayout.Button(new GUIContent("オブジェクト追加＋", "選択中のオブジェクトをアクターとしてエディタに追加します"), GUILayout.Width(200), GUILayout.Height(30)))
             {
                 if (selectedGameObject)//ぬるなら入らない。
 				{ 
-					rabuka.GetComponent<Rabuka>().objectList.Add(selectedGameObject);
-					tmpObject = new GameObject("TargetObject:" + (rabuka.GetComponent<Rabuka>().objectList.Count - 1).ToString());
-					tmpObject.transform.SetParent(rabuka.transform);//ラブ下につけます。
+					//インストラクタ（チェックポイントの親）を設置
+					tmpObject = new GameObject("ObjectInstructor:" + (rabuka.transform.childCount).ToString());//変更予定
+					tmpObject.AddComponent<ObjectInstructor>();
+					tmpObject.GetComponent<ObjectInstructor>().targetObject = selectedGameObject;
+					tmpObject.transform.SetParent(rabuka.transform);//ラブ下につけます（この場所は後で変更）
 				}
+				//elseで警告出す
 			}
+			}EditorGUILayout.EndHorizontal();
 
+			//通常オブジェクトチェックポイント蘭表示
 			objectsScrollPos = EditorGUILayout.BeginScrollView(objectsScrollPos, GUI.skin.box);
 			{
-				for(int i = 0; i < rabuka.GetComponent<Rabuka>().objectList.Count; i++)//インデックスつける？
+				// ObjectInstructor数取得（ヒエラルキドリブン）
+				int childCount = rabuka.transform.childCount;//rabukaは変更予定
+				for (int i = 0; i < childCount; i++)
                 {
+					GUI.color = Color.black;//色変え
 					EditorGUILayout.BeginVertical(GUI.skin.box);//縦
 					{
-						if (rabuka.GetComponent<Rabuka>().objectList[i] != null)//多分必要ないがエラー対策
+					GUI.color = Color.white;//色戻し
+						//インストラクタ
+						GameObject objectInstructor = rabuka.transform.GetChild(i).gameObject;
+						//ターゲットオブジェクト
+						GameObject targetObject = objectInstructor.GetComponent<ObjectInstructor>().targetObject;
+						//----オブジェクトがどんな種類でも共通の処理-----ターゲットが変わるのは流石に不味くないか。
+						EditorGUILayout.LabelField("OBJECT NUMBER: " + i.ToString());
+						//とりあえず、自動でターゲットオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
+						if (targetObject.GetComponent<Text>())//テキスト判定。
 						{
-							//----オブジェクトがどんな種類でも共通の処理-----ターゲットが変わるのは流石に不味くないか。
-							EditorGUILayout.LabelField("OBJECT NUMBER: " + i.ToString());
-							//じゃあとりあえず、自動でオブジェクトの種類を振り分け、その他だったら強制的にデフォルトのCSを追加するって方針でいきます。
-							if (rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<Text>())//テキストオブジェクトと判定。
-							{
-								EditorGUILayout.LabelField("TYPE TEXT: " + rabuka.GetComponent<Rabuka>().objectList[i].GetFullPath());
-								TextCheckPointDisplay(rabuka.GetComponent<Rabuka>().objectList[i], i);
-							}
-							else if (rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<Camera>())
-                            {
-                                if (!rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<PostEffect>())//ポストエフェクトの準備（まあ要らないけど）
-                                {
-									rabuka.GetComponent<Rabuka>().objectList[i].AddComponent<PostEffect>();
-									Material cameraMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/RABUKAEDITOR/Scripts/Camera/CameraMaterial.mat");
-									rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<PostEffect>()._material = cameraMaterial;
-									rabuka.GetComponent<Rabuka>().objectList[i].GetComponent<PostEffect>()._material.shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/RabukaEditor/Scripts/Camera/posteffect.shader");
-								}
-								EditorGUILayout.LabelField("TYPE CAMERA: " + rabuka.GetComponent<Rabuka>().objectList[i].GetFullPath());
-								CameraCheckPointDisplay(rabuka.GetComponent<Rabuka>().objectList[i], i);
-							}
-							else
-							{
-								EditorGUILayout.LabelField("The object type could not be recognized. It is classified into OTHER.");
-							}
-
+							EditorGUILayout.LabelField("TYPE:TEXT   PATH:" + targetObject.GetFullPath());
+							TextCheckPointDisplay(objectInstructor);
 						}
-					}
-					EditorGUILayout.EndVertical();
-				}
-			}
-			EditorGUILayout.EndScrollView();
-		}
-		EditorGUILayout.EndVertical();
+						else if (targetObject.GetComponent<Camera>())//カメラ判定、後で変更
+						{
+							if (!targetObject.GetComponent<PostEffect>())//ポストエフェクトの準備（まあ要らないけど）
+							{
+								//カメラにポストエフェクト追加
+								targetObject.AddComponent<PostEffect>();
+								//このパスまずいかも・・・。
+								Material cameraMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/RABUKAEDITOR/Scripts/Camera/CameraMaterial.mat");
+								targetObject.GetComponent<PostEffect>()._material = cameraMaterial;
+								targetObject.GetComponent<PostEffect>()._material.shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/RABUKAEDITOR/Scripts/Camera/posteffect.shader");
+							}
+							EditorGUILayout.LabelField("TYPE:CAMERA   PATH:" + targetObject.GetFullPath());
+							CameraCheckPointDisplay(objectInstructor);
+						}
+						else
+						{
+							EditorGUILayout.LabelField("The object type could not be recognized. It is classified into OTHER.");
+						}
+					}EditorGUILayout.EndVertical();
+				}//for
+			}EditorGUILayout.EndScrollView();
+		}EditorGUILayout.EndVertical();
 	}
 
-	void TextCheckPointDisplay(GameObject targetObject, int objectIndex)//Textオブジェクトだった場合の（そのターゲとオブジェクト固有の）表示
+	//Display系はファイル分けたい。
+
+	void TextCheckPointDisplay(GameObject objectInstructor)//Textオブジェクトだった場合の（そのターゲとオブジェクト固有の）表示
     {
-		GameObject checkPointParent = rabuka.transform.GetChild(objectIndex).gameObject;//objectIndex->i
-		if(checkPointParent == null)
-        {
-			Debug.Log("エラー:TextCheckPointDisplay()");
-        }
-		//チェックポイント追加（関数にするべきだけど優先的ではない）
+		bool needReturn = false;//関数抜ける用
+
+		//オブジェクトごと上段
 		EditorGUILayout.BeginHorizontal(GUI.skin.box);
 		{
-			if (GUILayout.Button("このオブジェクトを削除", GUILayout.Width(300), GUILayout.Height(30)))
+			if (GUILayout.Button(new GUIContent("削除×", "このオブジェクトを削除します"), GUILayout.Width(300), GUILayout.Height(30)))
 			{
-				rabuka.GetComponent<Rabuka>().objectList.RemoveAt(objectIndex);
-				GameObject.DestroyImmediate(checkPointParent);
-				return;//ゴリ押しジャン。
+				GameObject.DestroyImmediate(objectInstructor);
+				needReturn = true;
+			}
+			if (GUILayout.Button(new GUIContent("並び替え", "チェックポイントをフレーム番号順に並び替えします"), GUILayout.Width(300), GUILayout.Height(30)))
+			{
+				sortCheckPoint(objectInstructor);
 			}
 		}
 		EditorGUILayout.EndHorizontal();
+        if (needReturn) { return; }//オブジェクト削除したならここで表示を終わらせる
 
+		//チェックポイント表示
 		EditorGUILayout.BeginHorizontal(GUI.skin.box, GUILayout.Width(500));
 		{
-			for (int j = 0; j < checkPointParent.transform.childCount; j++)//チェックポイントごと jじゃなくてiで良さそう。
+			for (int j = 0; j < objectInstructor.transform.childCount; j++)//チェックポイントごと jじゃなくてiで良さそう。
 			{
 				EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(250));
 				{
-					tmpObject = checkPointParent.transform.GetChild(j).gameObject;
+					tmpObject = objectInstructor.transform.GetChild(j).gameObject;
 					//チェックポイントごとの表示
 					//EditorGUILayout.LabelField("Text:" + checkPointParent.transform.GetChild(j).gameObject.GetComponent<CheckPointText>().text);
-					//EditorGUILayout.LabelField("Frame:" + checkPointParent.transform.GetChild(j).gameObject.GetComponent<CheckPointText>().frameNum.ToString());
-					tmpObject.GetComponent<CheckPointText>().text = EditorGUILayout.TextField("Text", tmpObject.GetComponent<CheckPointText>().text);
+					//表示非表示処理
+					tmpObject.GetComponent<CheckPointText>().titlebarFold = EditorGUILayout.InspectorTitlebar(tmpObject.GetComponent<CheckPointText>().titlebarFold, tmpObject);
 					tmpObject.GetComponent<CheckPointText>().frameNum = EditorGUILayout.IntField("Frame", tmpObject.GetComponent<CheckPointText>().frameNum);
-					tmpObject.GetComponent<CheckPointText>().fontSize = EditorGUILayout.IntField("FontSize", tmpObject.GetComponent<CheckPointText>().fontSize);
-					tmpObject.GetComponent<CheckPointText>().color = EditorGUILayout.ColorField("Color", tmpObject.GetComponent<CheckPointText>().color);
-					tmpObject.GetComponent<CheckPointText>().position = EditorGUILayout.Vector3Field("Position", tmpObject.GetComponent<CheckPointText>().position);
-					tmpObject.GetComponent<CheckPointText>().rotation = EditorGUILayout.Vector3Field("Rotation", tmpObject.GetComponent<CheckPointText>().rotation);
-					tmpObject.GetComponent<CheckPointText>().scale = EditorGUILayout.Vector3Field("Scale", tmpObject.GetComponent<CheckPointText>().scale);
-					//どのチェックポイントにも共通する処理は関数にでもするか。
-					if (GUILayout.Button("チェックポイント削除", GUILayout.Width(150), GUILayout.Height(30)))
+					if (tmpObject.GetComponent<CheckPointText>().titlebarFold)
 					{
-						GameObject.DestroyImmediate(checkPointParent.transform.GetChild(j).gameObject);
+						tmpObject.GetComponent<CheckPointText>().text = EditorGUILayout.TextField("Text", tmpObject.GetComponent<CheckPointText>().text);
+						tmpObject.GetComponent<CheckPointText>().fontSize = EditorGUILayout.IntField("FontSize", tmpObject.GetComponent<CheckPointText>().fontSize);
+						tmpObject.GetComponent<CheckPointText>().color = EditorGUILayout.ColorField("Color", tmpObject.GetComponent<CheckPointText>().color);
+						tmpObject.GetComponent<CheckPointText>().position = EditorGUILayout.Vector3Field("Position", tmpObject.GetComponent<CheckPointText>().position);
+						tmpObject.GetComponent<CheckPointText>().rotation = EditorGUILayout.Vector3Field("Rotation", tmpObject.GetComponent<CheckPointText>().rotation);
+						tmpObject.GetComponent<CheckPointText>().scale = EditorGUILayout.Vector3Field("Scale", tmpObject.GetComponent<CheckPointText>().scale);
+					}
+					//どのチェックポイントにも共通する処理は関数にでもするか。
+					if (GUILayout.Button("チェックポイント削除×", GUILayout.Width(150), GUILayout.Height(30)))
+					{
+						GameObject.DestroyImmediate(objectInstructor.transform.GetChild(j).gameObject);
 					}
 				}
 				EditorGUILayout.EndVertical();
 			}
-			if (GUILayout.Button("チェックポイント追加", GUILayout.Width(200), GUILayout.Height(30)))
+			//チェックポイント追加
+			if (GUILayout.Button("チェックポイント追加＋", GUILayout.Width(200), GUILayout.Height(30)))
 			{
 				//削除された後、オブジェクト名のインデックスが戻るのでファインドは使わないこと
-				tmpObject = new GameObject("TextCheckPoint:" + (checkPointParent.transform.childCount).ToString());
-				tmpObject.transform.SetParent(checkPointParent.transform);
+				tmpObject = new GameObject("CheckPoint(TEXT):" + (objectInstructor.transform.childCount).ToString());
+				tmpObject.transform.SetParent(objectInstructor.transform);
 				tmpObject.AddComponent<CheckPointText>();
-				tmpObject.GetComponent<CheckPointText>().SetCheckPoint(targetObject, timeSlider);
+				tmpObject.GetComponent<CheckPointText>().SetCheckPoint(objectInstructor.GetComponent<ObjectInstructor>().targetObject, timeSlider);
 			}
 		}
 		EditorGUILayout.EndHorizontal();
 	}
 
-	void CameraCheckPointDisplay(GameObject targetObject, int objectIndex)//Textオブジェクトだった場合の（そのターゲとオブジェクト固有の）表示
+	void CameraCheckPointDisplay(GameObject objectInstructor)//カメラオブジェクトだった場合の（そのターゲとオブジェクト固有の）表示
 	{
-		GameObject checkPointParent = rabuka.transform.GetChild(objectIndex).gameObject;//objectIndex->i
-		if (checkPointParent == null)
-		{
-			Debug.Log("エラー:CameraCheckPointDisplay()");
-		}
-		//チェックポイント追加（関数にするべきだけど優先的ではない）
+		bool needReturn = false;
+
+		//チェックポイント追加（関数にするべきだけど優先的ではない）ここ関数出せるんじゃね？
 		EditorGUILayout.BeginHorizontal(GUI.skin.box);
 		{
 			if (GUILayout.Button("このオブジェクトを削除", GUILayout.Width(300), GUILayout.Height(30)))
 			{
-				rabuka.GetComponent<Rabuka>().objectList.RemoveAt(objectIndex);
-				GameObject.DestroyImmediate(checkPointParent);
-				return;//ゴリ押しジャン。
+				GameObject.DestroyImmediate(objectInstructor);
+				needReturn = true;
 			}
 		}
 		EditorGUILayout.EndHorizontal();
+        if (needReturn) { return; }
 
+		//チェックポイント表示
 		EditorGUILayout.BeginHorizontal(GUI.skin.box, GUILayout.Width(500));
 		{
-			for (int j = 0; j < checkPointParent.transform.childCount; j++)//チェックポイントごと jじゃなくてiで良さそう。
+			for (int j = 0; j < objectInstructor.transform.childCount; j++)//チェックポイントごと jじゃなくてiで良さそう。
 			{
 				EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(250));
 				{
-					tmpObject = checkPointParent.transform.GetChild(j).gameObject;
+					tmpObject = objectInstructor.transform.GetChild(j).gameObject;
 					//チェックポイントごとの表示
 					tmpObject.GetComponent<CheckPointCamera>().frameNum = EditorGUILayout.IntField("Frame", tmpObject.GetComponent<CheckPointCamera>().frameNum);
 					tmpObject.GetComponent<CheckPointCamera>().color = EditorGUILayout.ColorField("Color", tmpObject.GetComponent<CheckPointCamera>().color);
@@ -264,20 +310,46 @@ public class EditorExWindow03 : EditorWindow
 					//どのチェックポイントにも共通する処理は関数にでもするか。
 					if (GUILayout.Button("チェックポイント削除", GUILayout.Width(150), GUILayout.Height(30)))
 					{
-						GameObject.DestroyImmediate(checkPointParent.transform.GetChild(j).gameObject);
+						GameObject.DestroyImmediate(objectInstructor.transform.GetChild(j).gameObject);
 					}
 				}
 				EditorGUILayout.EndVertical();
 			}
 			if (GUILayout.Button("チェックポイント追加", GUILayout.Width(200), GUILayout.Height(30)))
 			{
-				tmpObject = new GameObject("CameraCheckPoint:" + (checkPointParent.transform.childCount).ToString());
-				tmpObject.transform.SetParent(checkPointParent.transform);
+				tmpObject = new GameObject("CheckPoint(CAMERA):" + (objectInstructor.transform.childCount).ToString());
+				tmpObject.transform.SetParent(objectInstructor.transform);
 				tmpObject.AddComponent<CheckPointCamera>();
-				tmpObject.GetComponent<CheckPointCamera>().SetCheckPoint(targetObject, timeSlider);
+				tmpObject.GetComponent<CheckPointCamera>().SetCheckPoint(objectInstructor.GetComponent<ObjectInstructor>().targetObject, timeSlider);
 			}
 		}
 		EditorGUILayout.EndHorizontal();
 	}
 
-}
+	//これだと、ラブカのオブジェクトリストも入れ替えしないといけない。
+	//チェックポイントソート関数(https://ftvoid.com/blog/post/869)
+	void sortCheckPoint(GameObject checkpointParent)
+	{
+		List<Transform> objList = new List<Transform>();
+
+		// 子階層のGameObject数取得
+		int childCount = checkpointParent.transform.childCount;
+
+		//用意したリストに子を追加
+		for (int i = 0; i < childCount; i++)
+		{
+			objList.Add(checkpointParent.transform.GetChild(i));
+		}
+
+		// オブジェクトを昇順ソート 親クラス名じゃとれないかなあ・・・。とれた！！！感動、新たな発見。
+		objList.Sort((obj1, obj2) => obj1.GetComponent<CheckPoint>().frameNum.CompareTo(obj2.GetComponent<CheckPoint>().frameNum));
+
+		// ソート結果順にGameObjectの順序を反映
+		foreach (Transform obj in objList)
+		{
+			obj.SetSiblingIndex(childCount - 1);//最後に入れ続ける
+		}
+	}
+
+}//class
+

@@ -6,7 +6,6 @@ public class Rabuka : MonoBehaviour
 {
     public int frame;
     public GameObject soundObject;//サウンドオブジェクト保存
-    public List<GameObject> objectList = new List<GameObject>();
 
     // Start is called before the first frame update
     void Start()
